@@ -47,10 +47,12 @@ public class OSController extends BaseController {
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
-        String route = subPath == null ? "" : subPath;
+        String route = normalizeRoute(subPath);
+        String method = request.getMethod().toUpperCase(Locale.ROOT);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "year".equalsIgnoreCase(route)) {
-            String format = HttpRequestUtil.headerValue(request, "format");
+        if ("GET".equals(method) && "year".equalsIgnoreCase(route)) {
+            String format = readValue(request, query, "format", "dateFormat");
             if (format == null || format.isBlank()) {
                 format = "yyyy";
             }
@@ -59,8 +61,8 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "month".equalsIgnoreCase(route)) {
-            String format = HttpRequestUtil.headerValue(request, "format");
+        if ("GET".equals(method) && "month".equalsIgnoreCase(route)) {
+            String format = readValue(request, query, "format", "dateFormat");
             if (format == null || format.isBlank()) {
                 format = "MM";
             }
@@ -69,13 +71,13 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "time".equalsIgnoreCase(route)) {
+        if ("GET".equals(method) && "time".equalsIgnoreCase(route)) {
             String timestamp = LocalDateTime.now().toString();
             respondJson(response, HttpStatus.SC_OK, "{\"Timestamp\":\"" + JsonUtil.escape(timestamp) + "\"}");
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "ip".equalsIgnoreCase(route)) {
+        if ("GET".equals(method) && "ip".equalsIgnoreCase(route)) {
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest req = HttpRequest.newBuilder(URI.create("https://ipinfo.io/ip")).GET().build();
@@ -89,10 +91,14 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "folder".equalsIgnoreCase(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String folderName = HttpRequestUtil.headerValue(request, "folderName");
-            String recreate = HttpRequestUtil.headerValue(request, "recreate");
+        if ("POST".equals(method) && ("folder".equalsIgnoreCase(route)
+                || "folder/create".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String folderName = readValue(request, query, "folderName", "folder", "path");
+            String recreate = readValue(request, query, "recreate", "recreateIfExists");
+            if (!require(response, "folderName", folderName)) {
+                return;
+            }
             Path target = tempProjectRoot(project).resolve(folderName).normalize();
             if ("Yes".equalsIgnoreCase(recreate)) {
                 deleteRecursively(target);
@@ -103,15 +109,20 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "folder".equalsIgnoreCase(route)) {
+        if ("GET".equals(method) && ("folder".equalsIgnoreCase(route)
+                || "folder/root".equalsIgnoreCase(route))) {
             String rootDir = System.getProperty("user.dir");
             respondJson(response, HttpStatus.SC_OK, "{\"rootDir\":\"" + JsonUtil.escape(rootDir) + "\"}");
             return;
         }
 
-        if ("DELETE".equalsIgnoreCase(request.getMethod()) && "folder/contents".equalsIgnoreCase(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String folderName = HttpRequestUtil.headerValue(request, "folderName");
+        if ("DELETE".equals(method) && ("folder/contents".equalsIgnoreCase(route)
+                || "folder/clean".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String folderName = readValue(request, query, "folderName", "folder", "path");
+            if (!require(response, "folderName", folderName)) {
+                return;
+            }
             Path target = tempProjectRoot(project).resolve(folderName).normalize();
             if (Files.exists(target) && Files.isDirectory(target)) {
                 try (var walk = Files.walk(target)) {
@@ -130,8 +141,12 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "variable".equalsIgnoreCase(route)) {
-            String varName = HttpRequestUtil.headerValue(request, "varName");
+        if ("GET".equals(method) && ("variable".equalsIgnoreCase(route)
+                || "env/variable".equalsIgnoreCase(route))) {
+            String varName = readValue(request, query, "varName", "name", "variableName");
+            if (!require(response, "varName", varName)) {
+                return;
+            }
             String envValue;
             if ("git_token".equals(varName) || "AZURE_DEVOPS_EXT_PAT".equals(varName)) {
                 envValue = "NotFound";
@@ -146,16 +161,20 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "variable".equalsIgnoreCase(route)) {
-            String varName = HttpRequestUtil.headerValue(request, "varName");
-            String varValue = HttpRequestUtil.headerValue(request, "varValue");
+        if ("POST".equals(method) && ("variable".equalsIgnoreCase(route)
+                || "env/variable".equalsIgnoreCase(route))) {
+            String varName = readValue(request, query, "varName", "name", "variableName");
+            String varValue = readValue(request, query, "varValue", "value", "variableValue");
+            if (!require(response, "varName", varName)) {
+                return;
+            }
             setEnvVarForCurrentProcess(varName, varValue);
             response.setCode(HttpStatus.SC_OK);
             response.setEntity(new StringEntity(varName + "was set", ContentType.TEXT_PLAIN));
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "crontab".equalsIgnoreCase(route)) {
+        if ("GET".equals(method) && "crontab".equalsIgnoreCase(route)) {
             String content = "";
             try {
                 Process process = new ProcessBuilder("crontab", "-l")
@@ -171,26 +190,31 @@ public class OSController extends BaseController {
             return;
         }
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "insightlink/session/schedule".equalsIgnoreCase(route)) {
-            handleScheduleSession(request, response);
+        if ("POST".equals(method) && ("insightlink/session/schedule".equalsIgnoreCase(route)
+                || "session/schedule".equalsIgnoreCase(route))) {
+            handleScheduleSession(request, response, query);
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private void handleScheduleSession(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private void handleScheduleSession(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
             return;
         }
 
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String sessionName = HttpRequestUtil.headerValue(request, "sessionName");
-        String schedule = HttpRequestUtil.headerValue(request, "schedule");
-        int maxRuns = parseIntOrDefault(HttpRequestUtil.headerValue(request, "maxRuns"), 1);
+        String projectName = readValue(request, query, "projectName", "project");
+        String sessionName = readValue(request, query, "sessionName", "session");
+        String schedule = readValue(request, query, "schedule", "interval");
+        int maxRuns = parseIntOrDefault(readValue(request, query, "maxRuns", "runs"), 1);
+        if (!require(response, "projectName", projectName) || !require(response, "sessionName", sessionName)) {
+            return;
+        }
 
         String group = envOr("rb_group", envOr("rbGroup", ""));
         String account = envOr("rb_account", envOr("rbAccount", ""));
@@ -226,6 +250,40 @@ public class OSController extends BaseController {
 
     private static Path tempProjectRoot(String project) {
         return Paths.get(System.getProperty("user.dir"), "data_files", "temp", project == null ? "" : project);
+    }
+
+    private static String normalizeRoute(String subPath) {
+        String route = subPath == null ? "" : subPath;
+        if (route.startsWith("os/")) {
+            route = route.substring("os/".length());
+        }
+        if ("os".equalsIgnoreCase(route)) {
+            return "";
+        }
+        return route;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String fieldName, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"Missing required field: " + JsonUtil.escape(fieldName) + "\"}");
+        return false;
     }
 
     private static String resolveScriptName(Path archivePath, String sessionName) throws IOException {

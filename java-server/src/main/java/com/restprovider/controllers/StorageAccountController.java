@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -38,57 +39,60 @@ public class StorageAccountController extends BaseController {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
         String method = request.getMethod().toUpperCase(Locale.ROOT);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
-        if ("GET".equals(method) && "container/directories".equalsIgnoreCase(route)) {
-            handleListDirectories(request, response);
+        if ("GET".equals(method) && ("container/directories".equalsIgnoreCase(route)
+                || "directories".equalsIgnoreCase(route))) {
+            handleListDirectories(request, response, query);
             return;
         }
-        if ("GET".equals(method) && "container/blobs".equalsIgnoreCase(route)) {
-            handleListBlobs(request, response);
+        if ("GET".equals(method) && ("container/blobs".equalsIgnoreCase(route)
+                || "blobs".equalsIgnoreCase(route))) {
+            handleListBlobs(request, response, query);
             return;
         }
         if ("GET".equals(method) && "container/blobs2".equalsIgnoreCase(route)) {
-            handleListBlobs(request, response);
+            handleListBlobs(request, response, query);
             return;
         }
         if ("PUT".equals(method) && "datafile/upload".equalsIgnoreCase(route)) {
-            handleUploadFile(request, response);
+            handleUploadFile(request, response, query);
             return;
         }
         if ("PUT".equals(method) && "datafolder/upload".equalsIgnoreCase(route)) {
-            handleUploadFolder(request, response, false);
+            handleUploadFolder(request, response, query, false);
             return;
         }
         if ("PUT".equals(method) && "datafolder/upload2".equalsIgnoreCase(route)) {
-            handleUploadFolder(request, response, true);
+            handleUploadFolder(request, response, query, true);
             return;
         }
         if ("GET".equals(method) && "datafile".equalsIgnoreCase(route)) {
-            handleCheckBlob(request, response, false);
+            handleCheckBlob(request, response, query, false);
             return;
         }
         if ("GET".equals(method) && "datafile2".equalsIgnoreCase(route)) {
-            handleCheckBlob(request, response, true);
+            handleCheckBlob(request, response, query, true);
             return;
         }
         if ("GET".equals(method) && "datafile/download".equalsIgnoreCase(route)) {
-            handleDownloadBlob(request, response);
+            handleDownloadBlob(request, response, query);
             return;
         }
         if ("GET".equals(method) && "datafile/metadata".equalsIgnoreCase(route)) {
-            handleFileMetadata(request, response);
+            handleFileMetadata(request, response, query);
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private void handleListDirectories(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String directory = HttpRequestUtil.headerValue(request, "directory");
+    private void handleListDirectories(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String directory = readValue(request, query, "directory", "path", "folder");
         String args = "storage fs directory list --account-name " + storageAccountName()
                 + " -f " + containerName()
                 + " --path \"" + directory + "\" --connection-string \"" + storageConnectString() + "\"";
@@ -96,10 +100,10 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private void handleListBlobs(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String isForInsightLink = headerOrDefault(request, "isForInsightLink", "No");
-        int maxResults = parseIntOrDefault(headerOrDefault(request, "maxResults", "103"), 103);
-        String directory = HttpRequestUtil.headerValue(request, "directory");
+    private void handleListBlobs(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String isForInsightLink = defaultValue(readValue(request, query, "isForInsightLink", "insightLink"), "No");
+        int maxResults = parseIntOrDefault(defaultValue(readValue(request, query, "maxResults", "limit"), "103"), 103);
+        String directory = readValue(request, query, "directory", "path", "folder");
         if ("YES".equalsIgnoreCase(isForInsightLink)) {
             directory = appendSlash(directory) + rbGroup() + "/";
         }
@@ -119,12 +123,16 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"finalResult\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private void handleUploadFile(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String customFileName = HttpRequestUtil.headerValue(request, "customFileName");
-        String landingFolderName = HttpRequestUtil.headerValue(request, "landingFolderName");
-        String metadata = headerOrDefault(request, "metadata", "No metadata");
-        String isForInsightLink = headerOrDefault(request, "isForInsightLink", "No");
+    private void handleUploadFile(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "storage");
+        String customFileName = readValue(request, query, "customFileName", "fileName", "file");
+        String landingFolderName = readValue(request, query, "landingFolderName", "folder", "path");
+        String metadata = defaultValue(readValue(request, query, "metadata"), "No metadata");
+        String isForInsightLink = defaultValue(readValue(request, query, "isForInsightLink", "insightLink"), "No");
+
+        if (!require(response, "customFileName", customFileName)) {
+            return;
+        }
 
         if ("YES".equalsIgnoreCase(isForInsightLink)) {
             landingFolderName = appendSlash(landingFolderName) + rbGroup() + "/";
@@ -153,12 +161,16 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private void handleUploadFolder(ClassicHttpRequest request, ClassicHttpResponse response, boolean useFsUpload)
+    private void handleUploadFolder(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query, boolean useFsUpload)
             throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String folderName = HttpRequestUtil.headerValue(request, "folderName");
-        String landingFolderName = HttpRequestUtil.headerValue(request, "landingFolderName");
-        String isForInsightLink = headerOrDefault(request, "isForInsightLink", "No");
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "storage");
+        String folderName = readValue(request, query, "folderName", "folder", "sourceFolder");
+        String landingFolderName = readValue(request, query, "landingFolderName", "targetFolder", "path");
+        String isForInsightLink = defaultValue(readValue(request, query, "isForInsightLink", "insightLink"), "No");
+
+        if (!require(response, "folderName", folderName)) {
+            return;
+        }
 
         if ("YES".equalsIgnoreCase(isForInsightLink)) {
             landingFolderName = appendSlash(landingFolderName) + rbGroup() + "/";
@@ -194,9 +206,12 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"All files uploaded\"}");
     }
 
-    private void handleCheckBlob(ClassicHttpRequest request, ClassicHttpResponse response, boolean useFs) {
-        String customFileName = HttpRequestUtil.headerValue(request, "customFileName");
-        String landingFolderName = appendSlash(HttpRequestUtil.headerValue(request, "landingFolderName"));
+    private void handleCheckBlob(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query, boolean useFs) {
+        String customFileName = readValue(request, query, "customFileName", "fileName", "file");
+        String landingFolderName = appendSlash(readValue(request, query, "landingFolderName", "folder", "path"));
+        if (!require(response, "customFileName", customFileName)) {
+            return;
+        }
         String args;
         if (!useFs) {
             args = "storage blob exists --account-name \"" + storageAccountName() + "\" --container-name \""
@@ -211,15 +226,19 @@ public class StorageAccountController extends BaseController {
         respondJson(response, code, "{\"Content\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private void handleDownloadBlob(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String fileName = HttpRequestUtil.headerValue(request, "fileName");
-        String filePath = HttpRequestUtil.headerValue(request, "filePath");
-        String remoteFilePath = HttpRequestUtil.headerValue(request, "remoteFilePath");
-        String isForInsightLink = headerOrDefault(request, "isForInsightLink", "No");
-        String useGroupForFolderName = headerOrDefault(request, "useGroupForFolderName", "No");
-        String deleteIfExists = headerOrDefault(request, "deleteIfExists", "No");
-        String skipWhenExists = headerOrDefault(request, "skipWhenExists", "No");
+    private void handleDownloadBlob(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "storage");
+        String fileName = readValue(request, query, "fileName", "customFileName", "file");
+        String filePath = readValue(request, query, "filePath", "localPath", "targetPath");
+        String remoteFilePath = readValue(request, query, "remoteFilePath", "folder", "path");
+        String isForInsightLink = defaultValue(readValue(request, query, "isForInsightLink", "insightLink"), "No");
+        String useGroupForFolderName = defaultValue(readValue(request, query, "useGroupForFolderName", "groupFolder"), "No");
+        String deleteIfExists = defaultValue(readValue(request, query, "deleteIfExists", "delete"), "No");
+        String skipWhenExists = defaultValue(readValue(request, query, "skipWhenExists", "skipIfExists"), "No");
+
+        if (!require(response, "fileName", fileName)) {
+            return;
+        }
 
         if ("YES".equalsIgnoreCase(useGroupForFolderName)) {
             filePath = rbGroup();
@@ -262,10 +281,13 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private void handleFileMetadata(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String fileName = HttpRequestUtil.headerValue(request, "fileName");
-        String folderName = HttpRequestUtil.headerValue(request, "folderName");
-        String isForInsightLink = headerOrDefault(request, "isForInsightLink", "No");
+    private void handleFileMetadata(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String fileName = readValue(request, query, "fileName", "customFileName", "file");
+        String folderName = readValue(request, query, "folderName", "folder", "path");
+        String isForInsightLink = defaultValue(readValue(request, query, "isForInsightLink", "insightLink"), "No");
+        if (!require(response, "fileName", fileName)) {
+            return;
+        }
         if ("YES".equalsIgnoreCase(isForInsightLink)) {
             folderName = appendSlash(folderName) + rbGroup() + "/";
         }
@@ -278,8 +300,8 @@ public class StorageAccountController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -297,6 +319,39 @@ public class StorageAccountController extends BaseController {
             return "";
         }
         return route;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean require(ClassicHttpResponse response, String field, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"Missing required parameter: " + JsonUtil.escape(field) + "\"}");
+        return false;
     }
 
     private static String headerOrDefault(ClassicHttpRequest request, String name, String defaultValue) {

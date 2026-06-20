@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -41,28 +42,39 @@ public class OfficeController extends BaseController {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
         String method = request.getMethod();
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
         if ("GET".equalsIgnoreCase(method)
-                && ("excel/all".equalsIgnoreCase(route) || "excel/bycoordinate".equalsIgnoreCase(route))) {
-            String passCode = HttpRequestUtil.headerValue(request, "passCode");
+                && ("excel/all".equalsIgnoreCase(route)
+                || "excel/bycoordinate".equalsIgnoreCase(route)
+                || "excel/range".equalsIgnoreCase(route)
+                || "excel/by-coordinate".equalsIgnoreCase(route))) {
+            String passCode = readValue(request, query, "passCode", "passcode");
             if (!passcodeValidator.isValid(passCode)) {
-            logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
-            respondText(response, HttpStatus.SC_OK, "Passcode failure");
+                logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
+                response.setCode(HttpStatus.SC_UNAUTHORIZED);
+                response.setEntity(new StringEntity("{\"passCodeResult\":\"Passcode failure\"}",
+                        ContentType.APPLICATION_JSON));
                 return;
             }
 
-            String projectName = HttpRequestUtil.headerValue(request, "projectName");
-            String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
-            String relativeInput = HttpRequestUtil.headerValue(request, "relativeInputFilePath");
-            String worksheetName = HttpRequestUtil.headerValue(request, "worksheetName");
-            String deleteIfExists = HttpRequestUtil.headerValue(request, "deleteIfExists");
+            String projectName = defaultValue(readValue(request, query, "projectName", "project"), "office");
+            String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "run"));
+            String relativeInput = readValue(request, query, "relativeInputFilePath", "inputFile", "file");
+            String worksheetName = readValue(request, query, "worksheetName", "sheet", "sheetName");
+            String deleteIfExists = defaultValue(readValue(request, query, "deleteIfExists", "delete"), "No");
+
+            if (!require(response, "relativeInputFilePath", relativeInput)
+                    || !require(response, "worksheetName", worksheetName)) {
+                return;
+            }
 
             Path tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", projectName);
             Files.createDirectories(tempFolder);
 
             Path inputPath = tempFolder.resolve(relativeInput).normalize();
             String defaultOutputName = testcaseName + "_excel.csv";
-            String outputFile = headerOrDefault(request, "outputFile", defaultOutputName);
+            String outputFile = defaultValue(readValue(request, query, "outputFile"), defaultOutputName);
             Path outputPath = tempFolder.resolve(outputFile).normalize();
 
             if (Files.exists(outputPath) && "Yes".equalsIgnoreCase(deleteIfExists)) {
@@ -73,10 +85,10 @@ public class OfficeController extends BaseController {
             if ("excel/all".equalsIgnoreCase(route)) {
                 content = readAll(inputPath, worksheetName);
             } else {
-                int rowStart = parseIntOrDefault(HttpRequestUtil.headerValue(request, "rowStart"), 1);
-                int rowEnd = parseIntOrDefault(HttpRequestUtil.headerValue(request, "rowEnd"), rowStart);
-                String colStart = HttpRequestUtil.headerValue(request, "colStart");
-                String colEnd = HttpRequestUtil.headerValue(request, "colEnd");
+                int rowStart = parseIntOrDefault(readValue(request, query, "rowStart", "startRow"), 1);
+                int rowEnd = parseIntOrDefault(readValue(request, query, "rowEnd", "endRow"), rowStart);
+                String colStart = readValue(request, query, "colStart", "startCol", "columnStart");
+                String colEnd = readValue(request, query, "colEnd", "endCol", "columnEnd");
                 content = readByCoordinate(inputPath, worksheetName, rowStart, rowEnd, colStart, colEnd);
             }
 
@@ -170,9 +182,36 @@ public class OfficeController extends BaseController {
         return input == null ? "" : input.replace(" ", "_");
     }
 
-    private static String headerOrDefault(ClassicHttpRequest request, String name, String defaultValue) {
-        String value = HttpRequestUtil.headerValue(request, name);
-        return value == null || value.isBlank() ? defaultValue : value;
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean require(ClassicHttpResponse response, String field, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondText(response, HttpStatus.SC_BAD_REQUEST, "Missing required parameter: " + field);
+        return false;
     }
 
     private static void respondText(ClassicHttpResponse response, int code, String body) {

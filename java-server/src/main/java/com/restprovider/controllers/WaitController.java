@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -34,10 +36,13 @@ public class WaitController extends BaseController {
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
-        String route = subPath == null ? "" : subPath;
+        String route = normalizeRoute(subPath);
+        String method = request.getMethod().toUpperCase(Locale.ROOT);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "sleep".equalsIgnoreCase(route)) {
-            int sleepFor = parseIntOrDefault(HttpRequestUtil.headerValue(request, "sleepFor"), 0);
+        if (("GET".equals(method) || "POST".equals(method))
+                && ("sleep".equalsIgnoreCase(route) || route.startsWith("sleep/"))) {
+            int sleepFor = parseSleepSeconds(route, readValue(request, query, "sleepFor", "seconds"));
             try {
                 Thread.sleep(Math.max(0, sleepFor) * 1000L);
             } catch (InterruptedException e) {
@@ -48,7 +53,7 @@ public class WaitController extends BaseController {
             return;
         }
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
@@ -206,14 +211,46 @@ public class WaitController extends BaseController {
         }
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
             return false;
         }
         return true;
+    }
+
+    private static String normalizeRoute(String subPath) {
+        String route = subPath == null ? "" : subPath;
+        if (route.startsWith("wait/")) {
+            route = route.substring("wait/".length());
+        }
+        if ("wait".equalsIgnoreCase(route)) {
+            return "";
+        }
+        return route;
+    }
+
+    private static int parseSleepSeconds(String route, String fallbackValue) {
+        if (route.startsWith("sleep/")) {
+            return parseIntOrDefault(route.substring("sleep/".length()), parseIntOrDefault(fallbackValue, 0));
+        }
+        return parseIntOrDefault(fallbackValue, 0);
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
     }
 
     private static String headerOrDefault(ClassicHttpRequest request, String name, String defaultValue) {

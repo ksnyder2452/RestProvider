@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -42,8 +43,9 @@ public class FHIRController extends BaseController {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
         String method = request.getMethod();
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
@@ -51,16 +53,50 @@ public class FHIRController extends BaseController {
                 || "POST".equalsIgnoreCase(method)
                 || "PUT".equalsIgnoreCase(method)
                 || "DELETE".equalsIgnoreCase(method))
-                && "".equals(route)) {
-            String objectType = HttpRequestUtil.headerValue(request, "objectType");
-            String service = headerOrEnv(request, "fhirPaaSService", "RESTPROVIDER_FHIR_SERVICE", "");
-            String token = retrievePat(service);
+                && ("".equals(route) || !route.isBlank())) {
+            String objectType = readValue(request, query, "objectType", "resourceType", "resource");
+            String resourceId = readValue(request, query, "resourceId", "id");
+
+            String path = route;
+            if (path.isBlank()) {
+                if (objectType.isBlank()) {
+                    respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                            "{\"error\":\"Missing required parameter: objectType or fhir route path\"}");
+                    return;
+                }
+                path = objectType + (resourceId.isBlank() ? "" : "/" + resourceId);
+            }
+
+            String service = headerOrEnv(request, query, "fhirPaaSService", "RESTPROVIDER_FHIR_SERVICE", "");
+            String baseUrl = readValue(request, query, "fhirBaseUrl", "baseUrl", "fhirUrl");
+            if (baseUrl.isBlank() && service.isBlank()) {
+                respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                        "{\"error\":\"Missing required parameter: fhirPaaSService or fhirBaseUrl\"}");
+                return;
+            }
+
+            String token = readValue(request, query, "fhirToken", "token", "bearerToken");
+            if (token.isBlank()) {
+                token = retrievePat(service);
+            }
             if (token.isBlank()) {
                 token = env("fhir_token");
             }
+            if (token.isBlank()) {
+                respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                        "{\"error\":\"Missing FHIR access token (fhirToken or fhir_token env)\"}");
+                return;
+            }
 
-            String endpoint = "https://" + service + ".fhir.azurehealthcareapis.com/" + objectType;
-            String result = httpInvoker.invoke(method.toUpperCase(), endpoint, token);
+            String payload = readValue(request, query, "payload", "body");
+            String contentType = defaultValue(readValue(request, query, "contentType"), "application/fhir+json");
+
+            String endpointBase = baseUrl.isBlank()
+                    ? "https://" + service + ".fhir.azurehealthcareapis.com"
+                    : stripTrailingSlash(baseUrl);
+            String endpoint = endpointBase + "/" + path;
+
+            String result = httpInvoker.invoke(method.toUpperCase(), endpoint, token, payload, contentType);
             respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
             return;
         }
@@ -68,8 +104,8 @@ public class FHIRController extends BaseController {
         super.handle(request, response, subPath);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -79,6 +115,9 @@ public class FHIRController extends BaseController {
     }
 
     private String retrievePat(String service) {
+        if (service == null || service.isBlank()) {
+            return "";
+        }
         if (cachedPat != null && !cachedPat.isBlank()) {
             return cachedPat;
         }
@@ -99,8 +138,9 @@ public class FHIRController extends BaseController {
         return route;
     }
 
-    private static String headerOrEnv(ClassicHttpRequest request, String header, String envName, String defaultValue) {
-        String headerValue = HttpRequestUtil.headerValue(request, header);
+    private static String headerOrEnv(ClassicHttpRequest request, Map<String, String> query,
+                                      String header, String envName, String defaultValue) {
+        String headerValue = readValue(request, query, header);
         if (headerValue != null && !headerValue.isBlank()) {
             return headerValue;
         }
@@ -113,13 +153,52 @@ public class FHIRController extends BaseController {
         return value == null ? "" : value;
     }
 
-    private static String invokeHttp(String method, String endpoint, String token) {
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static String stripTrailingSlash(String value) {
+        String v = value == null ? "" : value.trim();
+        while (v.endsWith("/")) {
+            v = v.substring(0, v.length() - 1);
+        }
+        return v;
+    }
+
+    private static String invokeHttp(String method, String endpoint, String token, String payload, String contentType) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest req = HttpRequest.newBuilder(URI.create(endpoint))
+            HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(endpoint))
                     .header("Authorization", "Bearer " + token)
-                    .method(method, HttpRequest.BodyPublishers.noBody())
-                    .build();
+                    .header("Content-Type", contentType == null || contentType.isBlank()
+                            ? "application/fhir+json"
+                            : contentType);
+            HttpRequest req;
+            if (payload == null || payload.isBlank()) {
+                req = builder.method(method, HttpRequest.BodyPublishers.noBody()).build();
+            } else {
+                req = builder.method(method, HttpRequest.BodyPublishers.ofString(payload)).build();
+            }
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -139,7 +218,7 @@ public class FHIRController extends BaseController {
 
     @FunctionalInterface
     public interface HttpInvoker {
-        String invoke(String method, String endpoint, String bearerToken);
+        String invoke(String method, String endpoint, String bearerToken, String payload, String contentType);
     }
 }
 

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -61,18 +62,19 @@ public class MiscController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
-        String method = request.getMethod().toUpperCase();
+        String method = request.getMethod().toUpperCase(Locale.ROOT);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
         if ("GET".equals(method) && "check/vpn".equalsIgnoreCase(route)) {
-            handleCheckVpn(request, response);
+            handleCheckVpn(request, response, query);
             return;
         }
         if ("GET".equals(method) && "heartbeat".equalsIgnoreCase(route)) {
-            handleHeartbeat(request, response);
+            handleHeartbeat(request, response, query);
             return;
         }
         if ("GET".equals(method) && "time/diff".equalsIgnoreCase(route)) {
-            handleTimeDiff(request, response);
+            handleTimeDiff(request, response, query);
             return;
         }
         if ("POST".equals(method) && "process/run".equalsIgnoreCase(route)) {
@@ -107,14 +109,14 @@ public class MiscController extends BaseController {
         }
 
         if ("GET".equals(method) && "file/property".equalsIgnoreCase(route)) {
-            if (!validatePassCode(request, response)) {
+            if (!validatePassCode(request, response, query)) {
                 return;
             }
             handleFileProperty(request, response);
             return;
         }
         if ("GET".equals(method) && "variables".equalsIgnoreCase(route)) {
-            if (!validatePassCode(request, response)) {
+            if (!validatePassCode(request, response, query)) {
                 return;
             }
             loadVariables(false);
@@ -122,21 +124,21 @@ public class MiscController extends BaseController {
             return;
         }
         if ("GET".equals(method) && "data/variable".equalsIgnoreCase(route)) {
-            if (!validatePassCode(request, response)) {
+            if (!validatePassCode(request, response, query)) {
                 return;
             }
             handleDataVariable(request, response);
             return;
         }
         if ("GET".equals(method) && "account/names".equalsIgnoreCase(route)) {
-            if (!validatePassCode(request, response)) {
+            if (!validatePassCode(request, response, query)) {
                 return;
             }
             handleAccountNames(response);
             return;
         }
         if ("PUT".equals(method) && "credential".equalsIgnoreCase(route)) {
-            if (!validatePassCode(request, response)) {
+            if (!validatePassCode(request, response, query)) {
                 return;
             }
             handleCredentialUpdate(request, response);
@@ -146,15 +148,21 @@ public class MiscController extends BaseController {
         super.handle(request, response, subPath);
     }
 
-    private void handleCheckVpn(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String expectedNetwork = HttpRequestUtil.headerValue(request, "expectedNetwork");
+    private void handleCheckVpn(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String expectedNetwork = readValue(request, query, "expectedNetwork", "networkPrefix");
+        if (!require(response, "expectedNetwork", expectedNetwork)) {
+            return;
+        }
         String ip = commandRunner.run("curl", "--silent https://ipinfo.io/ip").trim();
         int statusCode = ip.startsWith(expectedNetwork + ".") ? HttpStatus.SC_OK : HttpStatus.SC_NOT_ACCEPTABLE;
         respondJson(response, statusCode, "{\"Content\":\"" + JsonUtil.escape(ip) + "\"}");
     }
 
-    private void handleHeartbeat(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String hostName = HttpRequestUtil.headerValue(request, "hostName");
+    private void handleHeartbeat(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String hostName = readValue(request, query, "hostName", "host", "server");
+        if (!require(response, "hostName", hostName)) {
+            return;
+        }
         String output = commandRunner.run("ping", hostName + " -c 1");
         int statusCode = output.contains("0.0% packet loss") || output.toLowerCase().contains("received = 1")
                 ? HttpStatus.SC_OK
@@ -162,9 +170,12 @@ public class MiscController extends BaseController {
         respondJson(response, statusCode, "{\"Content\":\"" + JsonUtil.escape(output) + "\"}");
     }
 
-    private void handleTimeDiff(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String beginTime = HttpRequestUtil.headerValue(request, "beginTime").trim();
-        String endTime = HttpRequestUtil.headerValue(request, "endTime").trim();
+    private void handleTimeDiff(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String beginTime = readValue(request, query, "beginTime", "startTime").trim();
+        String endTime = readValue(request, query, "endTime", "finishTime").trim();
+        if (!require(response, "beginTime", beginTime) || !require(response, "endTime", endTime)) {
+            return;
+        }
         LocalDateTime begin = LocalDateTime.parse(beginTime);
         LocalDateTime end = LocalDateTime.parse(endTime);
         String span = Duration.between(begin, end).toString();
@@ -310,14 +321,37 @@ public class MiscController extends BaseController {
         return route;
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
             return false;
         }
         return true;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String fieldName, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"Missing required field: " + JsonUtil.escape(fieldName) + "\"}");
+        return false;
     }
 
     @SuppressWarnings("unchecked")

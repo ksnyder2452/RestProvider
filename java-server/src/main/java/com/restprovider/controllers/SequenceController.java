@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -35,16 +36,21 @@ public class SequenceController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
-        String method = request.getMethod();
+        String method = request.getMethod().toUpperCase(Locale.ROOT);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if ("POST".equalsIgnoreCase(method) && "".equals(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String sequenceName = HttpRequestUtil.headerValue(request, "sequenceName");
-            String recreate = HttpRequestUtil.headerValue(request, "recreateIfExists");
-            int minVal = parseIntOrDefault(HttpRequestUtil.headerValue(request, "minVal"), 0);
-            int incrementBy = parseIntOrDefault(HttpRequestUtil.headerValue(request, "incrementBy"), 1);
-            int maxVal = parseIntOrDefault(HttpRequestUtil.headerValue(request, "maxVal"), 999999999);
-            boolean shared = !HttpRequestUtil.headerValue(request, "share").isBlank();
+        if ("POST".equals(method) && ("".equals(route) || "create".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String sequenceName = readValue(request, query, "sequenceName", "name");
+            String recreate = readValue(request, query, "recreateIfExists", "recreate");
+            int minVal = parseIntOrDefault(readValue(request, query, "minVal", "startValue"), 0);
+            int incrementBy = parseIntOrDefault(readValue(request, query, "incrementBy", "step"), 1);
+            int maxVal = parseIntOrDefault(readValue(request, query, "maxVal", "endValue"), 999999999);
+            boolean shared = "YES".equalsIgnoreCase(readValue(request, query, "share", "shared"));
+
+            if (!require(response, "sequenceName", sequenceName)) {
+                return;
+            }
 
             Path seqFile = sequenceFile(project, sequenceName, shared);
             Files.createDirectories(seqFile.getParent());
@@ -60,9 +66,12 @@ public class SequenceController extends BaseController {
             return;
         }
 
-        if ("DELETE".equalsIgnoreCase(method) && "".equals(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String sequenceName = HttpRequestUtil.headerValue(request, "sequenceName");
+        if ("DELETE".equals(method) && ("".equals(route) || "delete".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String sequenceName = readValue(request, query, "sequenceName", "name");
+            if (!require(response, "sequenceName", sequenceName)) {
+                return;
+            }
             Path local = sequenceFile(project, sequenceName, false);
             Path global = sequenceFile(project, sequenceName, true);
             Files.deleteIfExists(local);
@@ -73,9 +82,12 @@ public class SequenceController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(method) && "nextval".equalsIgnoreCase(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String sequenceName = HttpRequestUtil.headerValue(request, "sequenceName");
+        if ("GET".equals(method) && ("nextval".equalsIgnoreCase(route) || "next".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String sequenceName = readValue(request, query, "sequenceName", "name");
+            if (!require(response, "sequenceName", sequenceName)) {
+                return;
+            }
             Path seqFile = resolveSequenceFile(project, sequenceName);
             Map<String, String> values = readSequence(seqFile);
             int currVal = parseIntOrDefault(values.get("currVal"), 0);
@@ -90,9 +102,12 @@ public class SequenceController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(method) && "currval".equalsIgnoreCase(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String sequenceName = HttpRequestUtil.headerValue(request, "sequenceName");
+        if ("GET".equals(method) && ("currval".equalsIgnoreCase(route) || "current".equalsIgnoreCase(route))) {
+            String project = readValue(request, query, "projectName", "project");
+            String sequenceName = readValue(request, query, "sequenceName", "name");
+            if (!require(response, "sequenceName", sequenceName)) {
+                return;
+            }
             Path seqFile = resolveSequenceFile(project, sequenceName);
             Map<String, String> values = readSequence(seqFile);
             respondText(response, HttpStatus.SC_OK, values.getOrDefault("currVal", "0"));
@@ -189,6 +204,29 @@ public class SequenceController extends BaseController {
         } catch (Exception ex) {
             return defaultValue;
         }
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String fieldName, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        response.setCode(HttpStatus.SC_BAD_REQUEST);
+        response.setEntity(new StringEntity("Missing required field: " + fieldName, ContentType.TEXT_PLAIN));
+        return false;
     }
 
     private static void respondText(ClassicHttpResponse response, int code, String body) {

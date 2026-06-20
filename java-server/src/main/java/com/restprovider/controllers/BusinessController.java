@@ -36,17 +36,42 @@ public class BusinessController implements BridgeController {
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "health".equalsIgnoreCase(subPath)) {
+        String route = normalizeRoute(subPath);
+
+        if ("GET".equalsIgnoreCase(request.getMethod()) && "health".equalsIgnoreCase(route)) {
             BusinessHealthResponse health = businessService.health();
-            response.setCode(HttpStatus.SC_OK);
-            response.setEntity(new StringEntity(
+            respondJson(response, HttpStatus.SC_OK,
                     "{\"status\":\"" + JsonUtil.escape(health.getStatus()) + "\","
-                            + "\"detail\":\"" + JsonUtil.escape(health.getDetail()) + "\"}",
-                    ContentType.APPLICATION_JSON));
+                            + "\"detail\":\"" + JsonUtil.escape(health.getDetail()) + "\"}");
             return;
         }
 
-        response.setCode(HttpStatus.SC_NOT_FOUND);
-        response.setEntity(new StringEntity("{\"error\":\"Unknown Business route\"}", ContentType.APPLICATION_JSON));
+        // Customer customization template:
+        // Add deployment-specific business routes here without changing project structure.
+        // Example:
+        // if ("GET".equalsIgnoreCase(request.getMethod()) && "my/custom/route".equalsIgnoreCase(route)) {
+        //     respondJson(response, HttpStatus.SC_OK, "{\"result\":\"custom response\"}");
+        //     return;
+        // }
+
+        respondJson(response, HttpStatus.SC_NOT_FOUND,
+                "{\"error\":\"Unknown Business route\","
+                        + "\"hint\":\"Replace BusinessController with custom business API routes for your deployment\"}");
+    }
+
+    private static String normalizeRoute(String subPath) {
+        String route = subPath == null ? "" : subPath;
+        if (route.startsWith("business/")) {
+            route = route.substring("business/".length());
+        }
+        if ("business".equalsIgnoreCase(route)) {
+            return "";
+        }
+        return route;
+    }
+
+    private static void respondJson(ClassicHttpResponse response, int code, String body) {
+        response.setCode(code);
+        response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 }

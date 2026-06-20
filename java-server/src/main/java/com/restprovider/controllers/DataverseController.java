@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -38,43 +39,50 @@ public class DataverseController extends BaseController {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
         String method = request.getMethod().toUpperCase();
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
-        if ("GET".equals(method) && "".equals(route)) {
-            handleQuery(request, response);
+        if (("GET".equals(method) || "POST".equals(method))
+                && ("".equals(route) || "query".equalsIgnoreCase(route))) {
+            handleQuery(request, response, query);
             return;
         }
-        if ("PUT".equals(method) && "ddl".equalsIgnoreCase(route)) {
-            handleExecuteNonQuery(request, response);
+        if (("PUT".equals(method) || "POST".equals(method)) && "ddl".equalsIgnoreCase(route)) {
+            handleExecuteNonQuery(request, response, query);
             return;
         }
-        if ("PUT".equals(method) && "".equals(route)) {
-            handleExecuteNonQuery(request, response);
+        if (("PUT".equals(method) || "POST".equals(method)) && "dml".equalsIgnoreCase(route)) {
+            handleExecuteNonQuery(request, response, query);
             return;
         }
-        if ("DELETE".equals(method) && "".equals(route)) {
-            handleExecuteNonQuery(request, response);
+        if (("PUT".equals(method) || "DELETE".equals(method) || "POST".equals(method))
+                && ("".equals(route) || "nonquery".equalsIgnoreCase(route))) {
+            handleExecuteNonQuery(request, response, query);
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private void handleQuery(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
-        String sql = HttpRequestUtil.headerValue(request, "sql_statement");
+    private void handleQuery(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "dataverse");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "dataverse_query"));
+        String sql = readValue(request, query, "sql_statement", "sql", "query");
+        if (!require(response, "sql_statement", sql)) {
+            return;
+        }
 
         Path tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", projectName);
         Files.createDirectories(tempFolder);
-        String outputFile = headerOrDefault(request, "outputFile", testcaseName + "_dataverse_query_result.txt");
+        String outputFile = defaultValue(readValue(request, query, "outputFile"), testcaseName + "_dataverse_query_result.txt");
         Path outputPath = tempFolder.resolve(outputFile);
         Files.deleteIfExists(outputPath);
 
-        String result = runDataverseSql(request, sql);
+        String result = runDataverseSql(request, query, sql);
         if (isFailure(result)) {
             respondJson(response, HttpStatus.SC_BAD_REQUEST,
                     "{\"connectionFailure\":\"" + JsonUtil.escape(result) + "\"}");
@@ -86,9 +94,12 @@ public class DataverseController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"RowCount\":\"" + rowCount + "\"}");
     }
 
-    private void handleExecuteNonQuery(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String sql = HttpRequestUtil.headerValue(request, "sql_statement");
-        String result = runDataverseSql(request, sql);
+    private void handleExecuteNonQuery(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String sql = readValue(request, query, "sql_statement", "sql", "query");
+        if (!require(response, "sql_statement", sql)) {
+            return;
+        }
+        String result = runDataverseSql(request, query, sql);
         if (isFailure(result)) {
             respondJson(response, HttpStatus.SC_BAD_REQUEST,
                     "{\"connectionFailure\":\"" + JsonUtil.escape(result) + "\"}");
@@ -99,18 +110,25 @@ public class DataverseController extends BaseController {
         respondJson(response, HttpStatus.SC_OK, "{\"RowCount\":\"" + JsonUtil.escape(rowCount) + "\"}");
     }
 
-    private String runDataverseSql(ClassicHttpRequest request, String sql) {
-        String env = HttpRequestUtil.headerValue(request, "dv_environment");
-        String user = env("dv_user");
-        String pwd = env("dv_password");
-        String server = env + ".dynamics.com";
+    private String runDataverseSql(ClassicHttpRequest request, Map<String, String> query, String sql) {
+        String environment = readValue(request, query, "dv_environment", "environment", "org");
+        if (environment.isBlank()) {
+            return "Missing required parameter: dv_environment";
+        }
+        String user = defaultValue(readValue(request, query, "dv_user", "user"), env("dv_user"));
+        String pwd = defaultValue(readValue(request, query, "dv_password", "password"), env("dv_password"));
+        if (user.isBlank() || pwd.isBlank()) {
+            return "Missing Dataverse credentials (dv_user/dv_password)";
+        }
+
+        String server = environment.contains(".") ? environment : environment + ".dynamics.com";
         String args = "-S \"" + server + "\" -U \"" + user + "\" -P \"" + pwd + "\" -Q \""
                 + escapeQuotes(sql) + "\"";
         return commandRunner.run("sqlcmd", args);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -132,11 +150,6 @@ public class DataverseController extends BaseController {
 
     private static String safeName(String value) {
         return value == null ? "" : value.replace(" ", "_");
-    }
-
-    private static String headerOrDefault(ClassicHttpRequest request, String name, String defaultValue) {
-        String value = HttpRequestUtil.headerValue(request, name);
-        return value == null || value.isBlank() ? defaultValue : value;
     }
 
     private static String escapeQuotes(String value) {
@@ -168,6 +181,39 @@ public class DataverseController extends BaseController {
     private static String env(String name) {
         String value = System.getenv(name);
         return value == null ? "" : value;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String field, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"" + JsonUtil.escape("Missing required parameter: " + field) + "\"}");
+        return false;
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
     }
 
     private static void respondJson(ClassicHttpResponse response, int code, String body) {

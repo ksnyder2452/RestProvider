@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -32,6 +33,7 @@ public class StringController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String normalized = normalizeSubPath(subPath);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
         if ("GET".equalsIgnoreCase(request.getMethod()) && normalized.startsWith("echo/")) {
             String echo = normalized.substring("echo/".length());
             response.setCode(HttpStatus.SC_OK);
@@ -48,9 +50,13 @@ public class StringController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "isnumber".equalsIgnoreCase(normalized)) {
-            String value = HttpRequestUtil.headerValue(request, "stringVal");
-            String positiveValidation = HttpRequestUtil.headerValue(request, "positiveValidation");
+        if ("GET".equalsIgnoreCase(request.getMethod())
+                && ("isnumber".equalsIgnoreCase(normalized) || "is-number".equalsIgnoreCase(normalized))) {
+            String value = readValue(request, query, "stringVal", "value", "input");
+            String positiveValidation = readValue(request, query, "positiveValidation", "expectNumber");
+            if (!require(response, "stringVal", value)) {
+                return;
+            }
             boolean expectNumber = "YES".equalsIgnoreCase(positiveValidation);
             boolean isNumber = isInteger(value);
             String message;
@@ -69,9 +75,12 @@ public class StringController extends BaseController {
         }
 
         if ("GET".equalsIgnoreCase(request.getMethod()) && "compare".equalsIgnoreCase(normalized)) {
-            String s1 = HttpRequestUtil.headerValue(request, "string1");
-            String s2 = HttpRequestUtil.headerValue(request, "string2");
-            String ignoreCase = HttpRequestUtil.headerValue(request, "ignoreCase");
+            String s1 = readValue(request, query, "string1", "left", "expected");
+            String s2 = readValue(request, query, "string2", "right", "actual");
+            String ignoreCase = readValue(request, query, "ignoreCase", "caseInsensitive");
+            if (!require(response, "string1", s1) || !require(response, "string2", s2)) {
+                return;
+            }
             boolean matched = "No".equalsIgnoreCase(ignoreCase) ? s1.equals(s2) : s1.equalsIgnoreCase(s2);
             response.setCode(matched ? HttpStatus.SC_OK : HttpStatus.SC_NOT_ACCEPTABLE);
             response.setEntity(new StringEntity(
@@ -80,12 +89,16 @@ public class StringController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "array/match".equalsIgnoreCase(normalized)) {
-            String stringArray = HttpRequestUtil.headerValue(request, "stringArray");
-            String stringToMatch = HttpRequestUtil.headerValue(request, "stringToMatch");
-            boolean ignoreCase = "YES".equalsIgnoreCase(HttpRequestUtil.headerValue(request, "ignoreCase"));
-            boolean similarMatch = "YES".equalsIgnoreCase(HttpRequestUtil.headerValue(request, "similarMatch"));
-            int matchDistance = parseIntOrDefault(HttpRequestUtil.headerValue(request, "matchDistance"), 1);
+        if ("GET".equalsIgnoreCase(request.getMethod())
+                && ("array/match".equalsIgnoreCase(normalized) || "array/compare".equalsIgnoreCase(normalized))) {
+            String stringArray = readValue(request, query, "stringArray", "values");
+            String stringToMatch = readValue(request, query, "stringToMatch", "matchValue");
+            boolean ignoreCase = "YES".equalsIgnoreCase(readValue(request, query, "ignoreCase", "caseInsensitive"));
+            boolean similarMatch = "YES".equalsIgnoreCase(readValue(request, query, "similarMatch", "fuzzyMatch"));
+            int matchDistance = parseIntOrDefault(readValue(request, query, "matchDistance", "distance"), 1);
+            if (!require(response, "stringArray", stringArray) || !require(response, "stringToMatch", stringToMatch)) {
+                return;
+            }
 
             List<String> values = splitCsv(stringArray);
             List<String> states = new ArrayList<>();
@@ -121,11 +134,15 @@ public class StringController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "json/to/array".equalsIgnoreCase(normalized)) {
-            String projectName = HttpRequestUtil.headerValue(request, "projectName");
-            String elementName = HttpRequestUtil.headerValue(request, "elementName");
-            String fileName = HttpRequestUtil.headerValue(request, "fileName");
-            String filePath = HttpRequestUtil.headerValue(request, "filePath");
+        if ("GET".equalsIgnoreCase(request.getMethod())
+                && ("json/to/array".equalsIgnoreCase(normalized) || "json/array".equalsIgnoreCase(normalized))) {
+            String projectName = readValue(request, query, "projectName", "project");
+            String elementName = readValue(request, query, "elementName", "jsonElement");
+            String fileName = readValue(request, query, "fileName", "file");
+            String filePath = readValue(request, query, "filePath", "path", "folder");
+            if (!require(response, "elementName", elementName) || !require(response, "fileName", fileName)) {
+                return;
+            }
 
             String cleanPath = filePath.endsWith("/") ? filePath : filePath + "/";
             Path source = Path.of(System.getProperty("user.dir"), "data_files", "temp", projectName, cleanPath, fileName);
@@ -150,7 +167,10 @@ public class StringController extends BaseController {
         }
 
         if ("GET".equalsIgnoreCase(request.getMethod()) && "encrypt".equalsIgnoreCase(normalized)) {
-            String clear = HttpRequestUtil.headerValue(request, "clearTextString");
+            String clear = readValue(request, query, "clearTextString", "value", "plainText");
+            if (!require(response, "clearTextString", clear)) {
+                return;
+            }
             String passphrase = System.getenv("restprovider_pwd");
             if (passphrase == null || passphrase.isBlank()) {
                 response.setCode(HttpStatus.SC_NOT_IMPLEMENTED);
@@ -165,8 +185,12 @@ public class StringController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "hash".equalsIgnoreCase(normalized)) {
-            String clear = HttpRequestUtil.headerValue(request, "clearTextString");
+        if ("GET".equalsIgnoreCase(request.getMethod())
+                && ("hash".equalsIgnoreCase(normalized) || "sha256".equalsIgnoreCase(normalized))) {
+            String clear = readValue(request, query, "clearTextString", "value", "plainText");
+            if (!require(response, "clearTextString", clear)) {
+                return;
+            }
             String hashed = sha256(clear);
             response.setCode(HttpStatus.SC_OK);
             response.setEntity(new StringEntity(hashed, ContentType.TEXT_PLAIN));
@@ -210,6 +234,31 @@ public class StringController extends BaseController {
             values.add(token.trim());
         }
         return values;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String fieldName, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        response.setCode(HttpStatus.SC_BAD_REQUEST);
+        response.setEntity(new StringEntity(
+                "{\"error\":\"Missing required field: " + JsonUtil.escape(fieldName) + "\"}",
+                ContentType.APPLICATION_JSON));
+        return false;
     }
 
     private static int levenshtein(String s, String t) {

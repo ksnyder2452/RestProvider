@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,66 +45,76 @@ public class CosmosDBController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
-        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+        String method = request.getMethod();
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
+
+        if (!("GET".equalsIgnoreCase(method) || "POST".equalsIgnoreCase(method))) {
             super.handle(request, response, subPath);
             return;
         }
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
-        if ("".equals(route)) {
-            handleQuery(request, response);
+        if (("".equals(route) || "query".equalsIgnoreCase(route))
+                && ("GET".equalsIgnoreCase(method) || "POST".equalsIgnoreCase(method))) {
+            handleQuery(request, response, query);
             return;
         }
         if ("databases".equalsIgnoreCase(route)) {
-            handleDatabases(request, response);
+            handleDatabases(request, response, query);
             return;
         }
-        if ("database/container/details".equalsIgnoreCase(route)) {
-            handleContainerDetails(request, response);
+        if ("database/container/details".equalsIgnoreCase(route)
+                || "container/details".equalsIgnoreCase(route)) {
+            handleContainerDetails(request, response, query);
             return;
         }
         if ("database/details".equalsIgnoreCase(route)) {
-            handleDatabaseDetails(request, response);
+            handleDatabaseDetails(request, response, query);
             return;
         }
         if ("containers".equalsIgnoreCase(route)) {
-            handleContainers(request, response);
+            handleContainers(request, response, query);
             return;
         }
         if ("database/container".equalsIgnoreCase(route)) {
-            handleDatabaseByContainerExact(request, response);
+            handleDatabaseByContainerExact(request, response, query);
             return;
         }
         if ("database/container/matchonvalue".equalsIgnoreCase(route)) {
-            handleContainerMatchOnValue(request, response);
+            handleContainerMatchOnValue(request, response, query);
             return;
         }
         if ("database/container/match".equalsIgnoreCase(route)) {
-            handleContainerFuzzyMatch(request, response);
+            handleContainerFuzzyMatch(request, response, query);
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private void handleQuery(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
-        String db = HttpRequestUtil.headerValue(request, "cosmosDatabaseId");
-        String container = HttpRequestUtil.headerValue(request, "cosmosContainerId");
-        String sql = HttpRequestUtil.headerValue(request, "sql_statement");
+    private void handleQuery(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_query"));
+        String db = readValue(request, query, "cosmosDatabaseId", "databaseId", "databaseName", "database");
+        String container = readValue(request, query, "cosmosContainerId", "containerId", "containerName", "container");
+        String sql = readValue(request, query, "sql_statement", "query", "sql");
+
+        if (!require(response, "databaseId", db) || !require(response, "containerId", container) || !require(response, "sql_statement", sql)) {
+            return;
+        }
 
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        String outputFile = headerOrDefault(request, "outputFile", testcaseName + "_cosmos_query_result.txt");
+        String outputFile = defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_query_result.txt");
         Path outputPath = folder.resolve(outputFile);
 
         String args = "cosmosdb sql query"
-                + rgArg(request)
-                + accountArg(request)
+                + rgArg(request, query)
+                + accountArg(request, query)
                 + " --database-name \"" + db + "\""
                 + " --container-name \"" + container + "\""
                 + " --query-text \"" + escapeQuotes(sql) + "\"";
@@ -118,71 +129,90 @@ public class CosmosDBController extends BaseController {
         }
     }
 
-    private void handleDatabases(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
+    private void handleDatabases(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_databases"));
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        Path outputPath = folder.resolve(headerOrDefault(request, "outputFile", testcaseName + "_cosmos_database_list.txt"));
+        Path outputPath = folder.resolve(defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_database_list.txt"));
 
-        String result = commandRunner.run("az", "cosmosdb sql database list" + rgArg(request) + accountArg(request));
+        String result = commandRunner.run("az", "cosmosdb sql database list" + rgArg(request, query) + accountArg(request, query));
         Files.writeString(outputPath, result, StandardCharsets.UTF_8);
-        respondText(response, HttpStatus.SC_OK, String.join(",", extractNames(result)));
+        respondJson(response, HttpStatus.SC_OK,
+                "{\"databases\":[\"" + String.join("\",\"", extractNames(result)) + "\"]}");
     }
 
-    private void handleContainerDetails(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String databaseName = HttpRequestUtil.headerValue(request, "databaseName");
-        String containerName = HttpRequestUtil.headerValue(request, "containerName");
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
+    private void handleContainerDetails(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String databaseName = readValue(request, query, "databaseName", "databaseId", "database");
+        String containerName = readValue(request, query, "containerName", "containerId", "container");
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_container"));
+        if (!require(response, "databaseName", databaseName) || !require(response, "containerName", containerName)) {
+            return;
+        }
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        Path outputPath = folder.resolve(headerOrDefault(request, "outputFile", testcaseName + "_cosmos_container_details.json"));
+        Path outputPath = folder.resolve(defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_container_details.json"));
 
         String result = commandRunner.run("az", "cosmosdb sql container show"
-                + rgArg(request)
-                + accountArg(request)
+                + rgArg(request, query)
+                + accountArg(request, query)
                 + " --database-name \"" + databaseName + "\""
                 + " --name \"" + containerName + "\"");
         Files.writeString(outputPath, result, StandardCharsets.UTF_8);
         respondText(response, HttpStatus.SC_OK, "Retrieved details for Cosmosdb Container " + containerName);
     }
 
-    private void handleDatabaseDetails(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String databaseName = HttpRequestUtil.headerValue(request, "databaseName");
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
+    private void handleDatabaseDetails(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String databaseName = readValue(request, query, "databaseName", "databaseId", "database");
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_database"));
+        if (!require(response, "databaseName", databaseName)) {
+            return;
+        }
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        Path outputPath = folder.resolve(headerOrDefault(request, "outputFile", testcaseName + "_cosmos_database_details.json"));
+        Path outputPath = folder.resolve(defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_database_details.json"));
 
         String result = commandRunner.run("az", "cosmosdb sql database show"
-                + rgArg(request)
-                + accountArg(request)
+                + rgArg(request, query)
+                + accountArg(request, query)
                 + " --name \"" + databaseName + "\"");
         Files.writeString(outputPath, result, StandardCharsets.UTF_8);
         respondText(response, HttpStatus.SC_OK, "Retrieved details for Cosmosdb Database " + databaseName);
     }
 
-    private void handleContainers(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String databaseId = HttpRequestUtil.headerValue(request, "databaseId");
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
+    private void handleContainers(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String databaseId = readValue(request, query, "databaseId", "databaseName", "database");
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_containers"));
+        if (!require(response, "databaseId", databaseId)) {
+            return;
+        }
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        Path outputPath = folder.resolve(headerOrDefault(request, "outputFile", testcaseName + "_cosmos_container_list.json"));
+        Path outputPath = folder.resolve(defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_container_list.json"));
 
         String result = commandRunner.run("az", "cosmosdb sql container list"
-                + rgArg(request)
-                + accountArg(request)
+                + rgArg(request, query)
+                + accountArg(request, query)
                 + " --database-name \"" + databaseId + "\"");
         Files.writeString(outputPath, result, StandardCharsets.UTF_8);
-        respondText(response, HttpStatus.SC_OK, String.join(",", extractNames(result)));
+        respondJson(response, HttpStatus.SC_OK,
+                "{\"containers\":[\"" + String.join("\",\"", extractNames(result)) + "\"]}");
     }
 
-    private void handleDatabaseByContainerExact(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String filter = HttpRequestUtil.headerValue(request, "filterForContainer");
-        MatchContext ctx = collectDatabaseContainerMap(request);
+    private void handleDatabaseByContainerExact(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String filter = readValue(request, query, "filterForContainer", "containerName", "container");
+        if (!require(response, "filterForContainer", filter)) {
+            return;
+        }
+        MatchContext ctx = collectDatabaseContainerMap(request, query);
         List<String> matches = new ArrayList<>();
         for (DatabaseContainers pair : ctx.map) {
             for (String c : pair.containers) {
@@ -194,17 +224,21 @@ public class CosmosDBController extends BaseController {
         respondText(response, HttpStatus.SC_OK, String.join(",", matches));
     }
 
-    private void handleContainerMatchOnValue(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String parameterName = HttpRequestUtil.headerValue(request, "parameterName");
-        String parameterValue = HttpRequestUtil.headerValue(request, "parameterValue");
-        MatchContext ctx = collectDatabaseContainerMap(request);
+    private void handleContainerMatchOnValue(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String parameterName = readValue(request, query, "parameterName", "field", "property");
+        String parameterValue = readValue(request, query, "parameterValue", "value");
+        if (!require(response, "parameterName", parameterName) || !require(response, "parameterValue", parameterValue)) {
+            return;
+        }
+        MatchContext ctx = collectDatabaseContainerMap(request, query);
         Set<String> matchedContainers = new LinkedHashSet<>();
 
         for (DatabaseContainers pair : ctx.map) {
             for (String container : pair.containers) {
                 String result = commandRunner.run("az", "cosmosdb sql query"
-                        + rgArg(request)
-                        + accountArg(request)
+                    + rgArg(request, query)
+                    + accountArg(request, query)
                         + " --database-name \"" + pair.database + "\""
                         + " --container-name \"" + container + "\""
                         + " --query-text \"select * from c\"");
@@ -217,9 +251,13 @@ public class CosmosDBController extends BaseController {
         respondText(response, HttpStatus.SC_OK, String.join(",", matchedContainers));
     }
 
-    private void handleContainerFuzzyMatch(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String filter = HttpRequestUtil.headerValue(request, "filterForContainer");
-        MatchContext ctx = collectDatabaseContainerMap(request);
+    private void handleContainerFuzzyMatch(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String filter = readValue(request, query, "filterForContainer", "containerName", "container");
+        if (!require(response, "filterForContainer", filter)) {
+            return;
+        }
+        MatchContext ctx = collectDatabaseContainerMap(request, query);
         List<String> matched = new ArrayList<>();
         for (DatabaseContainers pair : ctx.map) {
             for (String container : pair.containers) {
@@ -232,22 +270,23 @@ public class CosmosDBController extends BaseController {
         respondText(response, HttpStatus.SC_OK, String.join(",", matched));
     }
 
-    private MatchContext collectDatabaseContainerMap(ClassicHttpRequest request) throws IOException {
-        String projectName = HttpRequestUtil.headerValue(request, "projectName");
-        String testcaseName = safeName(HttpRequestUtil.headerValue(request, "testcaseName"));
+    private MatchContext collectDatabaseContainerMap(ClassicHttpRequest request, Map<String, String> query)
+            throws IOException {
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "cosmos");
+        String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "cosmos_map"));
         Path folder = tempProjectFolder(projectName);
         Files.createDirectories(folder);
-        Path outputPath = folder.resolve(headerOrDefault(request, "outputFile", testcaseName + "_cosmos_database_list.txt"));
+        Path outputPath = folder.resolve(defaultValue(readValue(request, query, "outputFile"), testcaseName + "_cosmos_database_list.txt"));
 
-        String dbList = commandRunner.run("az", "cosmosdb sql database list" + rgArg(request) + accountArg(request));
+        String dbList = commandRunner.run("az", "cosmosdb sql database list" + rgArg(request, query) + accountArg(request, query));
         Files.writeString(outputPath, dbList + System.lineSeparator(), StandardCharsets.UTF_8);
         List<String> dbs = extractNames(dbList);
 
         List<DatabaseContainers> map = new ArrayList<>();
         for (String db : dbs) {
             String containersResult = commandRunner.run("az", "cosmosdb sql container list"
-                    + rgArg(request)
-                    + accountArg(request)
+                    + rgArg(request, query)
+                    + accountArg(request, query)
                     + " --database-name \"" + db + "\"");
             Files.writeString(outputPath, containersResult + System.lineSeparator(), StandardCharsets.UTF_8,
                     java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
@@ -256,8 +295,8 @@ public class CosmosDBController extends BaseController {
         return new MatchContext(outputPath, map);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -288,6 +327,39 @@ public class CosmosDBController extends BaseController {
     private static String headerOrDefault(ClassicHttpRequest request, String name, String defaultValue) {
         String value = HttpRequestUtil.headerValue(request, name);
         return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean require(ClassicHttpResponse response, String field, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"" + JsonUtil.escape("Missing required parameter: " + field) + "\"}");
+        return false;
     }
 
     private static String env(String name) {
@@ -328,13 +400,15 @@ public class CosmosDBController extends BaseController {
         return dp[a.length()][b.length()];
     }
 
-    private static String rgArg(ClassicHttpRequest request) {
-        String rg = headerOrDefault(request, "resourceGroupName", env("RESTPROVIDER_COSMOS_RESOURCE_GROUP"));
+    private static String rgArg(ClassicHttpRequest request, Map<String, String> query) {
+        String rg = defaultValue(readValue(request, query, "resourceGroupName", "resourceGroup", "rg"),
+                env("RESTPROVIDER_COSMOS_RESOURCE_GROUP"));
         return rg.isBlank() ? "" : " --resource-group \"" + rg + "\"";
     }
 
-    private static String accountArg(ClassicHttpRequest request) {
-        String acc = headerOrDefault(request, "cosmosdbAccountName", env("RESTPROVIDER_COSMOS_ACCOUNT_NAME"));
+    private static String accountArg(ClassicHttpRequest request, Map<String, String> query) {
+        String acc = defaultValue(readValue(request, query, "cosmosdbAccountName", "accountName", "account"),
+                env("RESTPROVIDER_COSMOS_ACCOUNT_NAME"));
         return acc.isBlank() ? "" : " --account-name \"" + acc + "\"";
     }
 

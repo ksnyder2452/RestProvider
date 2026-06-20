@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -45,16 +46,20 @@ public class FileController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
         if ("GET".equalsIgnoreCase(request.getMethod()) && "exists".equalsIgnoreCase(route)) {
-            String project = HttpRequestUtil.headerValue(request, "projectName");
-            String filePath = HttpRequestUtil.headerValue(request, "filePath");
-            String fileName = HttpRequestUtil.headerValue(request, "fileName");
-            if ("YES".equalsIgnoreCase(HttpRequestUtil.headerValue(request, "isForInsightLink"))) {
+            String project = readValue(request, query, "projectName", "project");
+            String filePath = readValue(request, query, "filePath", "path", "folder");
+            String fileName = readValue(request, query, "fileName", "file");
+            if (!require(response, "fileName", fileName)) {
+                return;
+            }
+            if ("YES".equalsIgnoreCase(readValue(request, query, "isForInsightLink", "insightLink"))) {
                 String group = rbGroup();
                 filePath = filePath == null || filePath.isBlank() ? group : appendSlash(filePath) + group;
             }
@@ -350,21 +355,23 @@ public class FileController extends BaseController {
             return;
         }
 
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "local".equalsIgnoreCase(route)) {
-            handleLocalDownload(request, response);
+        if ("GET".equalsIgnoreCase(request.getMethod()) && ("local".equalsIgnoreCase(route)
+                || "download/local".equalsIgnoreCase(route))) {
+            handleLocalDownload(request, response, query);
             return;
         }
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "local".equalsIgnoreCase(route)) {
-            handleLocalUpload(request, response);
+        if ("POST".equalsIgnoreCase(request.getMethod()) && ("local".equalsIgnoreCase(route)
+                || "upload/local".equalsIgnoreCase(route))) {
+            handleLocalUpload(request, response, query);
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -538,11 +545,15 @@ public class FileController extends BaseController {
         respondJson(response, code, "{\"Content\":\"" + (match ? "match" : "no match") + "\"}");
     }
 
-    private void handleLocalDownload(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException {
-        String project = HttpRequestUtil.headerValue(request, "projectName");
-        String fileName = HttpRequestUtil.headerValue(request, "fileName");
+    private void handleLocalDownload(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException {
+        String project = readValue(request, query, "projectName", "project");
+        String fileName = readValue(request, query, "fileName", "file");
+        if (!require(response, "fileName", fileName)) {
+            return;
+        }
         String folder = "";
-        if ("YES".equalsIgnoreCase(HttpRequestUtil.headerValue(request, "isForInsightLink"))) {
+        if ("YES".equalsIgnoreCase(readValue(request, query, "isForInsightLink", "insightLink"))) {
             folder = rbGroup();
         }
         Path file = safeTempPath(project, folder, fileName);
@@ -555,9 +566,13 @@ public class FileController extends BaseController {
         response.setEntity(new ByteArrayEntity(Files.readAllBytes(file), ContentType.APPLICATION_OCTET_STREAM));
     }
 
-    private void handleLocalUpload(ClassicHttpRequest request, ClassicHttpResponse response) throws IOException, ParseException {
-        String project = HttpRequestUtil.headerValue(request, "projectName");
-        String fileName = HttpRequestUtil.headerValue(request, "fileName");
+    private void handleLocalUpload(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query)
+            throws IOException, ParseException {
+        String project = readValue(request, query, "projectName", "project");
+        String fileName = readValue(request, query, "fileName", "file");
+        if (!require(response, "fileName", fileName)) {
+            return;
+        }
         Path file = safeTempPath(project, "", fileName);
         Files.createDirectories(file.getParent());
         byte[] payload = request.getEntity() == null ? new byte[0] : EntityUtils.toByteArray(request.getEntity());
@@ -684,6 +699,29 @@ public class FileController extends BaseController {
         } catch (Exception ex) {
             return defaultValue;
         }
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... names) {
+        for (String name : names) {
+            String headerValue = HttpRequestUtil.headerValue(request, name);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+            String queryValue = query.get(name);
+            if (queryValue != null && !queryValue.isBlank()) {
+                return queryValue;
+            }
+        }
+        return "";
+    }
+
+    private static boolean require(ClassicHttpResponse response, String fieldName, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"Missing required field: " + JsonUtil.escape(fieldName) + "\"}");
+        return false;
     }
 
     private static void respondJson(ClassicHttpResponse response, int code, String body) {

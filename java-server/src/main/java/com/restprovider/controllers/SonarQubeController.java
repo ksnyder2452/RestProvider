@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -36,20 +37,35 @@ public class SonarQubeController extends BaseController {
             throws IOException, HttpException {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "".equals(route)) {
-            String serverName = HttpRequestUtil.headerValue(request, "serverName");
-            String serverPort = HttpRequestUtil.headerValue(request, "serverPort");
-            if (serverPort == null || serverPort.isBlank()) {
-                serverPort = "9000";
+        if (("POST".equalsIgnoreCase(request.getMethod()) || "GET".equalsIgnoreCase(request.getMethod()))
+                && ("".equals(route) || "graphql".equalsIgnoreCase(route))) {
+            String serverName = readValue(request, query, "serverName", "host");
+            String serverPort = defaultValue(readValue(request, query, "serverPort", "port"), "9000");
+            String baseUrl = readValue(request, query, "sonarBaseUrl", "baseUrl");
+            String graphQlQuery = readValue(request, query, "graphQLQuery", "query", "graphql");
+            String apiToken = defaultValue(readValue(request, query, "sonarqubeApiToken", "apiToken", "token"), env("sonarqube_apitoken"));
+
+            if (!require(response, "graphQLQuery", graphQlQuery)) {
+                return;
             }
-            String graphQlQuery = HttpRequestUtil.headerValue(request, "graphQLQuery");
-            String apiToken = env("sonarqube_apitoken");
-            String endpoint = "https://" + serverName + ":" + serverPort + "/api/graphql";
+            if (baseUrl.isBlank() && serverName.isBlank()) {
+                respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                        "{\"error\":\"Missing required parameter: serverName or sonarBaseUrl\"}");
+                return;
+            }
+            if (!require(response, "sonarqubeApiToken", apiToken)) {
+                return;
+            }
+
+            String endpoint = baseUrl.isBlank()
+                    ? "https://" + serverName + ":" + serverPort + "/api/graphql"
+                    : stripTrailingSlash(baseUrl) + "/api/graphql";
 
             String rowCount = httpExecutor.postGraphQL(endpoint, apiToken, graphQlQuery);
             respondJson(response, HttpStatus.SC_OK, "{\"RowCount\":\"" + JsonUtil.escape(rowCount) + "\"}");
@@ -59,8 +75,8 @@ public class SonarQubeController extends BaseController {
         super.handle(request, response, subPath);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -83,6 +99,47 @@ public class SonarQubeController extends BaseController {
     private static String env(String name) {
         String value = System.getenv(name);
         return value == null ? "" : value;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean require(ClassicHttpResponse response, String field, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondJson(response, HttpStatus.SC_BAD_REQUEST,
+                "{\"error\":\"Missing required parameter: " + JsonUtil.escape(field) + "\"}");
+        return false;
+    }
+
+    private static String stripTrailingSlash(String value) {
+        String v = value == null ? "" : value.trim();
+        while (v.endsWith("/")) {
+            v = v.substring(0, v.length() - 1);
+        }
+        return v;
     }
 
     private static String executeGraphQL(String endpoint, String token, String query) {

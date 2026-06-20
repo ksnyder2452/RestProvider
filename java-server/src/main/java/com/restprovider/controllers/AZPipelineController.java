@@ -6,6 +6,8 @@ import com.restprovider.domain.security.EnvPasscodeValidator;
 import com.restprovider.domain.security.PasscodeValidator;
 import com.restprovider.util.JsonUtil;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.restprovider.core.BaseController;
@@ -18,6 +20,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 
 public class AZPipelineController extends BaseController {
     private static final Pattern RESULT_PATTERN = Pattern.compile("\\\"result\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
+    private static final Pattern STATUS_PATTERN = Pattern.compile("\\\"status\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
 
     private final PasscodeValidator passcodeValidator;
     private final CommandRunner commandRunner;
@@ -38,71 +41,117 @@ public class AZPipelineController extends BaseController {
         logger.debug("Handling request controller={} method={} subPath={}", getName(), request.getMethod(), subPath);
         String route = normalizeRoute(subPath);
         String method = request.getMethod();
+        Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
 
-        if (!validatePassCode(request, response)) {
+        if (!validatePassCode(request, response, query)) {
             return;
         }
 
         if ("GET".equalsIgnoreCase(method) && "pipeline/runs".equalsIgnoreCase(route)) {
-            String organization = organizationUrl(HttpRequestUtil.headerValue(request, "organization"));
-            String project = HttpRequestUtil.headerValue(request, "project");
-            String top = headerOrDefault(request, "top", "10");
-            String queryOrder = optionalArg("query-order", HttpRequestUtil.headerValue(request, "queryOrder"));
-            String reason = optionalArg("reason", HttpRequestUtil.headerValue(request, "reason"));
-            String result = optionalArg("result", HttpRequestUtil.headerValue(request, "result"));
-            String status = optionalArg("status", HttpRequestUtil.headerValue(request, "status"));
-            String output = runAz("pipelines runs list --organization " + organization + " --project " + project
-                    + " --top " + top + queryOrder + reason + result + status);
+            String organization = organizationUrl(readValue(request, query, "organization", "org"));
+            String project = readValue(request, query, "project");
+            String top = defaultValue(readValue(request, query, "top"), "10");
+            if (!require(response, "organization", organization) || !require(response, "project", project)) {
+                return;
+            }
+
+            String queryOrder = optionalArg("query-order", readValue(request, query, "queryOrder", "query-order"));
+            String reason = optionalArg("reason", readValue(request, query, "reason"));
+            String result = optionalArg("result", readValue(request, query, "result"));
+            String status = optionalArg("status", readValue(request, query, "status"));
+            String branch = optionalArg("branch", readValue(request, query, "branch"));
+            String pipelineIds = optionalArg("pipeline-ids", readValue(request, query, "pipelineIds", "pipeline-ids"));
+            String requestedFor = optionalArg("requested-for", readValue(request, query, "requestedFor", "requested-for"));
+            String createdAfter = optionalArg("created-after", readValue(request, query, "createdAfter", "created-after"));
+            String createdBefore = optionalArg("created-before", readValue(request, query, "createdBefore", "created-before"));
+
+            String output = runAz("pipelines runs list --organization " + quoteArg(organization)
+                    + " --project " + quoteArg(project)
+                    + " --top " + quoteArg(top)
+                    + queryOrder + reason + result + status + branch + pipelineIds
+                    + requestedFor + createdAfter + createdBefore);
             respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(output) + "\"}");
             return;
         }
 
         if ("GET".equalsIgnoreCase(method) && "pipeline/run".equalsIgnoreCase(route)) {
-            String organization = organizationUrl(HttpRequestUtil.headerValue(request, "organization"));
-            String project = HttpRequestUtil.headerValue(request, "project");
-            String runId = HttpRequestUtil.headerValue(request, "runId");
-            String output = runAz("pipelines runs show --id " + runId + " --organization " + organization
-                    + " --project " + project);
+            String organization = organizationUrl(readValue(request, query, "organization", "org"));
+            String project = readValue(request, query, "project");
+            String runId = readValue(request, query, "runId", "id");
+            if (!require(response, "organization", organization)
+                    || !require(response, "project", project)
+                    || !require(response, "runId", runId)) {
+                return;
+            }
+
+            String output = runAz("pipelines runs show --id " + quoteArg(runId)
+                    + " --organization " + quoteArg(organization)
+                    + " --project " + quoteArg(project));
             respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(output) + "\"}");
             return;
         }
 
         if ("GET".equalsIgnoreCase(method) && "pipeline/run/waituntilcomplete".equalsIgnoreCase(route)) {
-            String organization = organizationUrl(HttpRequestUtil.headerValue(request, "organization"));
-            String project = HttpRequestUtil.headerValue(request, "project");
-            String runId = HttpRequestUtil.headerValue(request, "runId");
-            int numberLoops = parseIntOrDefault(HttpRequestUtil.headerValue(request, "numberLoops"), 1);
+            String organization = organizationUrl(readValue(request, query, "organization", "org"));
+            String project = readValue(request, query, "project");
+            String runId = readValue(request, query, "runId", "id");
+            int numberLoops = parseIntOrDefault(readValue(request, query, "numberLoops"), 240);
+            int sleepMs = parseIntOrDefault(readValue(request, query, "sleepInterval", "sleepMs", "sleepSeconds"), 30_000);
+            if (sleepMs > 0 && sleepMs < 1000) {
+                sleepMs = sleepMs * 1000;
+            }
+            if (!require(response, "organization", organization)
+                    || !require(response, "project", project)
+                    || !require(response, "runId", runId)) {
+                return;
+            }
 
             String output = "";
             int loops = 0;
             while (loops < Math.max(1, numberLoops)) {
-                output = runAz("pipelines runs show --id " + runId + " --organization " + organization
-                        + " --project " + project);
-                String lower = output.toLowerCase();
-                if (lower.contains("\"status\": \"completed\"")
-                        || lower.contains("\"status\":\"completed\"")
-                        || lower.contains("\"status\": \"postponed\"")
-                        || lower.contains("\"status\":\"postponed\"")
-                        || lower.contains("\"status\": \"notstarted\"")
-                        || lower.contains("\"status\":\"notstarted\"")) {
+                output = runAz("pipelines runs show --id " + quoteArg(runId)
+                        + " --organization " + quoteArg(organization)
+                        + " --project " + quoteArg(project));
+                String statusValue = extractField(STATUS_PATTERN, output).toLowerCase(Locale.ROOT);
+                if (isTerminalStatus(statusValue)) {
                     break;
                 }
                 loops++;
-                sleepQuietly(30_000);
+                sleepQuietly(sleepMs);
             }
 
             String resultValue = extractField(RESULT_PATTERN, output);
+            String statusValue = extractField(STATUS_PATTERN, output);
             respondJson(response, HttpStatus.SC_OK,
-                    "{\"result\":\"" + JsonUtil.escape(resultValue.isBlank() ? output : resultValue) + "\"}");
+                    "{\"result\":\"" + JsonUtil.escape(resultValue.isBlank() ? output : resultValue)
+                            + "\",\"status\":\"" + JsonUtil.escape(statusValue)
+                            + "\",\"output\":\"" + JsonUtil.escape(output) + "\"}");
             return;
         }
 
         if ("POST".equalsIgnoreCase(method) && "pipeline/run".equalsIgnoreCase(route)) {
-            String organization = organizationUrl(HttpRequestUtil.headerValue(request, "organization"));
-            String project = HttpRequestUtil.headerValue(request, "project");
-            String pipelineName = HttpRequestUtil.headerValue(request, "pipelineName");
-            String output = runAz("pipelines run --name " + pipelineName + " --organization " + organization
-                    + " --project " + project);
+            String organization = organizationUrl(readValue(request, query, "organization", "org"));
+            String project = readValue(request, query, "project");
+            String pipelineName = readValue(request, query, "pipelineName", "pipeline", "name");
+            String pipelineId = readValue(request, query, "pipelineId", "id");
+            if (!require(response, "organization", organization)
+                    || !require(response, "project", project)) {
+                return;
+            }
+            if (pipelineName.isBlank() && pipelineId.isBlank()) {
+                respondBadRequest(response, "Missing required parameter: pipelineName or pipelineId");
+                return;
+            }
+
+            String output = runAz("pipelines run"
+                    + (pipelineName.isBlank() ? " --id " + quoteArg(pipelineId) : " --name " + quoteArg(pipelineName))
+                    + " --organization " + quoteArg(organization)
+                    + " --project " + quoteArg(project)
+                    + optionalArg("branch", readValue(request, query, "branch"))
+                    + optionalArg("commit-id", readValue(request, query, "commitId", "commit-id"))
+                    + optionalArg("folder-path", readValue(request, query, "folderPath", "folder-path"))
+                    + optionalArg("parameters", readValue(request, query, "parameters"))
+                    + optionalArg("variables", readValue(request, query, "variables")));
             respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(output) + "\"}");
             return;
         }
@@ -110,8 +159,8 @@ public class AZPipelineController extends BaseController {
         super.handle(request, response, subPath);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response) {
-        String passCode = HttpRequestUtil.headerValue(request, "passCode");
+    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
+        String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
             respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
@@ -136,14 +185,72 @@ public class AZPipelineController extends BaseController {
     }
 
     private static String organizationUrl(String org) {
-        return "https://dev.azure.com/" + org + "/";
+        String value = org == null ? "" : org.trim();
+        if (value.isBlank()) {
+            return "";
+        }
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return value.endsWith("/") ? value : value + "/";
+        }
+        return "https://dev.azure.com/" + value + "/";
     }
 
     private static String optionalArg(String key, String value) {
         if (value == null || value.isBlank()) {
             return "";
         }
-        return " --" + key + " " + value;
+        return " --" + key + " " + quoteArg(value);
+    }
+
+    private static String quoteArg(String value) {
+        String normalized = value == null ? "" : value;
+        return "\"" + normalized.replace("\"", "\\\\\"") + "\"";
+    }
+
+    private static String defaultValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean require(ClassicHttpResponse response, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            return true;
+        }
+        respondBadRequest(response, "Missing required parameter: " + key);
+        return false;
+    }
+
+    private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
+        for (String key : keys) {
+            String headerValue = HttpRequestUtil.headerValue(request, key);
+            if (headerValue != null && !headerValue.isBlank()) {
+                return headerValue;
+            }
+        }
+        for (String key : keys) {
+            for (Map.Entry<String, String> entry : query.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                    String value = entry.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private static boolean isTerminalStatus(String status) {
+        String normalized = status == null ? "" : status.trim().toLowerCase(Locale.ROOT);
+        return "completed".equals(normalized)
+                || "canceled".equals(normalized)
+                || "failed".equals(normalized)
+                || "postponed".equals(normalized)
+                || "notstarted".equals(normalized)
+                || "abandoned".equals(normalized);
+    }
+
+    private static void respondBadRequest(ClassicHttpResponse response, String message) {
+        respondJson(response, HttpStatus.SC_BAD_REQUEST, "{\"error\":\"" + JsonUtil.escape(message) + "\"}");
     }
 
     private static String extractField(Pattern pattern, String input) {
