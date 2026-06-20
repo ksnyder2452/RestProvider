@@ -1,9 +1,11 @@
 package com.restprovider.controllers;
 
+import com.restprovider.core.BaseController;
 import com.restprovider.core.HttpRequestUtil;
 import com.restprovider.core.ProcessUtil;
 import com.restprovider.domain.security.EnvPasscodeValidator;
 import com.restprovider.domain.security.PasscodeValidator;
+import com.restprovider.util.CsvUtil;
 import com.restprovider.util.JsonUtil;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +18,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -385,14 +386,18 @@ public class FileController extends BaseController {
         String parentFile = HttpRequestUtil.headerValue(request, "parentFile");
         String childFile = HttpRequestUtil.headerValue(request, "childFile");
         String tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", project).toString();
-        String shellFolder = Path.of(System.getProperty("user.dir"), "ShellCommand").toString();
 
         String parentSorted = parentFile + "_sorted";
         String childSorted = childFile + "_sorted";
-        String result = commandRunner.run(shellFolder + "/sortCSVRows.sh", "\"" + tempFolder + "/" + parentFile + "\" \""
-                + tempFolder + "/" + parentSorted + "\"");
-        result = commandRunner.run(shellFolder + "/sortCSVRows.sh", "\"" + tempFolder + "/" + childFile + "\" \""
-                + tempFolder + "/" + childSorted + "\"");
+        try {
+            CsvUtil.sortRows(Path.of(tempFolder, parentFile), Path.of(tempFolder, parentSorted));
+            CsvUtil.sortRows(Path.of(tempFolder, childFile), Path.of(tempFolder, childSorted));
+        } catch (IOException ex) {
+            respondJson(response, HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "{\"error\":\"" + JsonUtil.escape(ex.getMessage()) + "\"}");
+            return;
+        }
+        String result = "";
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
@@ -401,9 +406,15 @@ public class FileController extends BaseController {
         String originalFile = HttpRequestUtil.headerValue(request, "originalFile");
         String newFile = HttpRequestUtil.headerValue(request, "newFile");
         String tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", project).toString();
-        String shell = Path.of(System.getProperty("user.dir"), "ShellCommand", "sortCSVRows.sh").toString();
-        String result = commandRunner.run(shell, "\"" + tempFolder + "/" + originalFile + "\" \"" + tempFolder + "/"
-                + newFile + "\"");
+        String result;
+        try {
+            CsvUtil.sortRows(Path.of(tempFolder, originalFile), Path.of(tempFolder, newFile));
+            result = "";
+        } catch (IOException ex) {
+            respondJson(response, HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "{\"error\":\"" + JsonUtil.escape(ex.getMessage()) + "\"}");
+            return;
+        }
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 
@@ -412,18 +423,21 @@ public class FileController extends BaseController {
         String originalFile = HttpRequestUtil.headerValue(request, "originalFileName");
         String newFile = HttpRequestUtil.headerValue(request, "newFileName");
         String tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", project).toString();
-        String shellName = existingList ? "sortCSVColumnsExistingList.sh" : "sortCSVColumns.sh";
-        String shell = Path.of(System.getProperty("user.dir"), "ShellCommand", shellName).toString();
-        String args = originalFile + " " + newFile + " \"" + tempFolder + "\"";
-        if (existingList) {
-            args = args + " " + HttpRequestUtil.headerValue(request, "existingListFileName");
-        } else {
-            String columns = HttpRequestUtil.headerValue(request, "columnList");
-            if (!columns.isBlank()) {
-                args = args + " \"" + columns + "\"";
+        String result;
+        try {
+            if (existingList) {
+                CsvUtil.sortColumnsFromListFile(Path.of(tempFolder, originalFile), Path.of(tempFolder, newFile),
+                        Path.of(tempFolder, HttpRequestUtil.headerValue(request, "existingListFileName")));
+            } else {
+                String columns = HttpRequestUtil.headerValue(request, "columnList");
+                CsvUtil.sortColumns(Path.of(tempFolder, originalFile), Path.of(tempFolder, newFile), columns);
             }
+            result = "";
+        } catch (IOException ex) {
+            respondJson(response, HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "{\"error\":\"" + JsonUtil.escape(ex.getMessage()) + "\"}");
+            return;
         }
-        String result = commandRunner.run(shell, args);
         respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
     }
 

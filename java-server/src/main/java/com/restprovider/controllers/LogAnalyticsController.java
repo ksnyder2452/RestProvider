@@ -78,9 +78,10 @@ public class LogAnalyticsController extends BaseController {
         String outputFile = defaultValue(readValue(request, query, "outputFile"), testcaseName + "_loganalytics.out");
         Path outputPath = tempFolder.resolve(outputFile);
 
-        Path scriptPath = Path.of(System.getProperty("user.dir"), "ShellCommand", "AdfLogger.sh");
-        String args = runId + " " + workspaceId + " " + quote(tempFolder.toString()) + " " + quote(outputFile);
-        commandRunner.run(scriptPath.toString(), args);
+        String queryString = "AppTraces | where OperationName <> '' | join kind=leftouter ( AppTraces | where OperationName == '' | project OperationRightId=tostring(Properties.OperationId), RightMessage=Message, props=Properties ) on \\$left.OperationId == \\$right.OperationRightId and \\$left.Message == \\$right.RightMessage | project TimeGenerated, Logger=props.Logger, Level=Properties.LogLevel, Message, RunId=props.RunId, FileName=props.FileName, FileEntity=props.FileEntity, Source=props.Source, Action=props.Action, CountSuccess=props.CountSuccess, CountFailed=props.CountFailed, CountTotal=props.CountTotal, ExecutionTime=props.ExecutionTime | where Logger in ('PdrAdfLogger') | where Action in ('SendRiskToSFHC') | where Level in ('Error') | where RunId == '" + runId + "' | order by TimeGenerated";
+        String args = "monitor log-analytics query -w " + workspaceId + " --analytics-query \"" + queryString + "\"";
+        String cliResult = commandRunner.run("az", args);
+        Files.writeString(outputPath, cliResult == null ? "" : cliResult, StandardCharsets.UTF_8);
 
         String result = fileContentReader.read(outputPath).trim();
         String content = result;
