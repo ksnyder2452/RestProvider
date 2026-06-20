@@ -1,0 +1,11 @@
+{
+  "id": "f29c79f0-6054-456a-acca-9192e5daa9f0",
+  "Name": "wash dog",
+  "IsComplete": false,
+  "Secret": null,
+  "_rid": "3bYSANyN1PQBAAAAAAAAAA==",
+  "_self": "dbs/3bYSAA==/colls/3bYSANyN1PQ=/docs/3bYSANyN1PQBAAAAAAAAAA==/",
+  "_etag": "\"53030651-0000-0200-0000-637ba4bb0000\"",
+  "_attachments": "attachments/",
+  "_ts": 1669047483
+}
