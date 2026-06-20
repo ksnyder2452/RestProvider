@@ -122,6 +122,11 @@ Operational admin endpoints:
 3. Disable one controller.
    - `PUT /admin/controllers/{name}/enabled?value=false`
 
+Default startup state:
+
+1. All registered controllers are disabled by default when the Java server starts.
+2. Enable only the controllers you need using the admin endpoints above.
+
 Expected behavior:
 
 1. Enabled controllers continue to serve requests normally.
