@@ -15,7 +15,7 @@ public class ControllerRegistry {
     public void register(BridgeController controller) {
         String key = normalize(controller.getName());
         controllers.put(key, controller);
-        enabled.putIfAbsent(key, Boolean.TRUE);
+        enabled.putIfAbsent(key, Boolean.FALSE);
     }
 
     public BridgeController getController(String name) {
