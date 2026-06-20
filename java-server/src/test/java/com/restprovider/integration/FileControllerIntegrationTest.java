@@ -26,6 +26,7 @@ class FileControllerIntegrationTest {
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new FileController(validator, runner));
+        registry.setControllerEnabled("File", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -63,10 +64,9 @@ class FileControllerIntegrationTest {
     @Test
     void shouldUploadFileToLocalRoute() throws Exception {
         String project = "upload_" + System.nanoTime();
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/file/local");
-        request.addHeader("passCode", "valid-passcode");
-        request.addHeader("projectName", project);
-        request.addHeader("fileName", "payload.txt");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+            "POST",
+            "/api/file/upload/local?passcode=valid-passcode&project=" + project + "&file=payload.txt");
         request.setEntity(new StringEntity("hello", ContentType.TEXT_PLAIN));
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
@@ -76,5 +76,16 @@ class FileControllerIntegrationTest {
         Path saved = Path.of(System.getProperty("user.dir"), "data_files", "temp", project, "payload.txt");
         Assertions.assertTrue(Files.exists(saved));
         Assertions.assertEquals("hello", Files.readString(saved, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void shouldRejectExistsWhenFileMissingFromRequest() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/file/exists?passcode=valid-passcode&project=test");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("fileName"));
     }
 }

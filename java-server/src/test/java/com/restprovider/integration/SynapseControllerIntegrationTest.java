@@ -20,6 +20,7 @@ class SynapseControllerIntegrationTest {
         SynapseController.CommandRunner runner = (command, args) -> "synapse query done";
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new SynapseController(validator, runner));
+        registry.setControllerEnabled("Synapse", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -34,18 +35,27 @@ class SynapseControllerIntegrationTest {
 
     @Test
     void shouldExecuteSynapseQueryWhenPasscodeValid() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/synapse");
-        request.addHeader("passCode", "valid-passcode");
-        request.addHeader("projectName", "syn_proj");
-        request.addHeader("testcaseName", "tc1");
-        request.addHeader("sql_statement", "select 1");
-        request.addHeader("serverName", "syn-server");
-        request.addHeader("databaseName", "db1");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+            "POST",
+            "/api/synapse/query?passcode=valid-passcode&project=syn_proj&testCase=tc1&sql=select%201&server=syn-server&database=db1");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("synapse query done"));
+    }
+
+    @Test
+    void shouldRejectSynapseQueryWhenSqlMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/synapse/query?passcode=valid-passcode&project=syn_proj&server=syn-server&database=db1");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("sql_statement"));
     }
 }

@@ -23,13 +23,13 @@ class OSControllerIntegrationTest {
         OSController.CommandRunner runner = (command, args) -> "ok";
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new OSController(validator, runner));
+        registry.setControllerEnabled("OS", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
     @Test
     void shouldReturnYear() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/os/year");
-        request.addHeader("format", "yyyy");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/os/year?dateFormat=yyyy");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
@@ -83,17 +83,25 @@ class OSControllerIntegrationTest {
         Files.createDirectories(archive);
         Files.writeString(archive.resolve("sessionB_container.sh"), "#!/bin/sh\necho hi\n", StandardCharsets.UTF_8);
 
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/os/insightlink/session/schedule");
-        request.addHeader("projectName", "proj2");
-        request.addHeader("sessionName", "sessionB");
-        request.addHeader("schedule", "*/1 * * * *");
-        request.addHeader("maxRuns", "1");
-        request.addHeader("passCode", "valid-passcode");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+            "POST",
+            "/api/os/session/schedule?project=proj2&session=sessionB&interval=*/1%20*%20*%20*%20*&runs=1&passcode=valid-passcode");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("has been submitted"));
+    }
+
+    @Test
+    void shouldRejectFolderCreateWithoutFolderName() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/os/folder/create?project=proj3");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("folderName"));
     }
 }

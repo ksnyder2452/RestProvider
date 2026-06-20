@@ -23,7 +23,18 @@ class AdminToggleIntegrationTest {
     void shouldDisableAndEnableControllerViaAdminRoute() throws Exception {
         BasicClassicHttpResponse beforeDisable = new BasicClassicHttpResponse(200);
         dispatcher.handle(new BasicClassicHttpRequest("GET", "/api/string/echo"), beforeDisable, TestHttpContexts.newContext());
-        Assertions.assertEquals(200, beforeDisable.getCode());
+        Assertions.assertEquals(403, beforeDisable.getCode());
+
+        BasicClassicHttpResponse initialEnableResponse = new BasicClassicHttpResponse(200);
+        dispatcher.handle(
+            new BasicClassicHttpRequest("PUT", "/admin/controllers/string/enabled?value=true"),
+            initialEnableResponse,
+            TestHttpContexts.newContext());
+        Assertions.assertEquals(200, initialEnableResponse.getCode());
+
+        BasicClassicHttpResponse enabledResponse = new BasicClassicHttpResponse(200);
+        dispatcher.handle(new BasicClassicHttpRequest("GET", "/api/string/echo"), enabledResponse, TestHttpContexts.newContext());
+        Assertions.assertEquals(200, enabledResponse.getCode());
 
         BasicClassicHttpResponse disableResponse = new BasicClassicHttpResponse(200);
         dispatcher.handle(

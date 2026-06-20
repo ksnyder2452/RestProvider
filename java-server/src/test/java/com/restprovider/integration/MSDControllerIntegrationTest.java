@@ -6,7 +6,6 @@ import com.restprovider.core.ControllerRegistry;
 import com.restprovider.domain.security.PasscodeValidator;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ class MSDControllerIntegrationTest {
         MSDController.CommandRunner runner = (command, args) -> "sqlcmd completed";
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new MSDController(validator, runner));
+        registry.setControllerEnabled("MSD", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -40,11 +40,39 @@ class MSDControllerIntegrationTest {
         request.addHeader("testcaseName", "tc1");
         request.addHeader("sql_statement", "select 1");
         request.addHeader("serverHostName", "msd-host");
+        request.addHeader("account", "acc");
+        request.addHeader("password", "pwd");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("sqlcmd completed"));
+    }
+
+    @Test
+    void shouldSupportQueryRouteAliasWithQueryString() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/msd/query?passCode=valid-passcode&projectName=msd_proj&testcaseName=tc1"
+                        + "&sql=select%201&server=msd-host&user=acc&pwd=secret");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("sqlcmd completed"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRequiredFieldsMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/msd");
+        request.addHeader("passCode", "valid-passcode");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("Missing required parameter"));
     }
 }

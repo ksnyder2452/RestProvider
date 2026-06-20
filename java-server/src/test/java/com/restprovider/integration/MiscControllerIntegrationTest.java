@@ -39,13 +39,13 @@ class MiscControllerIntegrationTest {
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new MiscController(validator, runner, new Random(1234), vars));
+        registry.setControllerEnabled("Misc", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
     @Test
     void shouldValidateVpnNetwork() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/misc/check/vpn");
-        request.addHeader("expectedNetwork", "10.42");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/misc/check/vpn?networkPrefix=10.42");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
@@ -89,13 +89,23 @@ class MiscControllerIntegrationTest {
 
     @Test
     void shouldReturnAccountNames() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/misc/account/names");
-        request.addHeader("passCode", "valid-passcode");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/misc/account/names?passcode=valid-passcode");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("acctA,acctB"));
+    }
+
+    @Test
+    void shouldRejectHeartbeatWhenHostMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/misc/heartbeat");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("hostName"));
     }
 }

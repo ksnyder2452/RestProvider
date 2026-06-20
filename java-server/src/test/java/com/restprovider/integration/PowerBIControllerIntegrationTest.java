@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,7 @@ class PowerBIControllerIntegrationTest {
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new PowerBIController(validator, tokenProvider, invoker));
+        registry.setControllerEnabled("PowerBI", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -56,5 +56,33 @@ class PowerBIControllerIntegrationTest {
         Path output = Path.of(System.getProperty("user.dir"), "data_files", "temp", project, "powerBI_get_response.txt");
         Assertions.assertTrue(Files.exists(output));
         Assertions.assertTrue(Files.readString(output, StandardCharsets.UTF_8).contains("status"));
+    }
+
+    @Test
+    void shouldSupportRequestAliasAndQueryString() throws Exception {
+        String project = "pbi_" + System.nanoTime();
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/powerbi/request?passCode=valid-passcode&project=" + project
+                        + "&request=groups&org=org1&version=1.0&token=abc-token");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Path output = Path.of(System.getProperty("user.dir"), "data_files", "temp", project, "powerBI_get_response.txt");
+        Assertions.assertTrue(Files.exists(output));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRequiredFieldsMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/powerbi");
+        request.addHeader("passCode", "valid-passcode");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("Missing required parameter"));
     }
 }

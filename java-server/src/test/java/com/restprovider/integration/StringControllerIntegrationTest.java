@@ -17,6 +17,7 @@ class StringControllerIntegrationTest {
     void setup() {
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new StringController());
+        registry.setControllerEnabled("String", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -32,10 +33,9 @@ class StringControllerIntegrationTest {
 
     @Test
     void shouldCompareStringsAndReturn406WhenNotMatched() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/string/string/compare");
-        request.addHeader("string1", "alpha");
-        request.addHeader("string2", "beta");
-        request.addHeader("ignoreCase", "No");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+            "GET",
+            "/api/string/compare?left=alpha&right=beta&ignoreCase=No");
 
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
         dispatcher.handle(request, response, TestHttpContexts.newContext());
@@ -46,8 +46,7 @@ class StringControllerIntegrationTest {
 
     @Test
     void shouldHashString() throws Exception {
-        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/string/string/hash");
-        request.addHeader("clearTextString", "abc");
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/string/sha256?plainText=abc");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
@@ -56,5 +55,16 @@ class StringControllerIntegrationTest {
         Assertions.assertEquals(
                 "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
                 TestResponseUtil.body(response));
+    }
+
+    @Test
+    void shouldRejectCompareWhenInputsMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/string/compare?left=alpha");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("string2"));
     }
 }

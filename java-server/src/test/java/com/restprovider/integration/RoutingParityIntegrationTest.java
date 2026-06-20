@@ -16,6 +16,7 @@ class RoutingParityIntegrationTest {
     @BeforeEach
     void setup() {
         ControllerRegistry registry = DefaultRegistryFactory.createDefaultRegistry();
+        registry.setControllerEnabled("String", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 

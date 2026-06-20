@@ -7,7 +7,6 @@ import com.restprovider.domain.security.PasscodeValidator;
 import java.util.Locale;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +30,7 @@ class DataverseControllerIntegrationTest {
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new DataverseController(validator, runner));
+        registry.setControllerEnabled("Dataverse", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -53,6 +53,8 @@ class DataverseControllerIntegrationTest {
         request.addHeader("testcaseName", "CaseDV");
         request.addHeader("sql_statement", "SELECT * FROM account");
         request.addHeader("dv_environment", "sample-env");
+        request.addHeader("dv_user", "user");
+        request.addHeader("dv_password", "pwd");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
@@ -69,11 +71,43 @@ class DataverseControllerIntegrationTest {
         request.addHeader("testcaseName", "CaseDV");
         request.addHeader("sql_statement", "DDL TEST");
         request.addHeader("dv_environment", "sample-env");
+        request.addHeader("dv_user", "user");
+        request.addHeader("dv_password", "pwd");
         BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
 
         dispatcher.handle(request, response, TestHttpContexts.newContext());
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("\"RowCount\":\"0\""));
+    }
+
+    @Test
+    void shouldSupportQueryStringInputsForQueryRoute() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/dataverse/query?passCode=valid-passcode&projectName=ProjDV&testcaseName=CaseDV"
+                        + "&sql=SELECT%20*%20FROM%20account&dv_environment=sample-env"
+                        + "&dv_user=user&dv_password=pwd");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("\"RowCount\":\"2\""));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSqlMissing() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("PUT", "/api/dataverse/ddl");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("dv_environment", "sample-env");
+        request.addHeader("dv_user", "user");
+        request.addHeader("dv_password", "pwd");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(400, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("Missing required parameter"));
     }
 }

@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,7 @@ class BrowserStackControllerIntegrationTest {
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new BrowserStackController(validator, invoker));
+        registry.setControllerEnabled("BrowserStack", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -72,5 +72,45 @@ class BrowserStackControllerIntegrationTest {
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("sessions/session-55.json"));
+    }
+
+    @Test
+    void shouldSupportQueryParametersForBuildList() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/browserstack/build/list?passCode=valid-passcode&numberBuilds=7&status=running");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        String body = TestResponseUtil.body(response);
+        Assertions.assertTrue(body.contains("builds.json?limit=7&status=running"));
+    }
+
+    @Test
+    void shouldHandleBuildDetailsRoute() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("GET", "/api/browserstack/build/details");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("buildId", "build-77");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("builds/build-77.json"));
+    }
+
+    @Test
+    void shouldHandleAppiumSessionListRoute() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/browserstack/appium/session/list?passCode=valid-passcode&buildId=app-build-42");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("builds/app-build-42/sessions.json"));
     }
 }

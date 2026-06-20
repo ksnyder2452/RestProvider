@@ -10,7 +10,6 @@ import com.restprovider.domain.security.PasscodeValidator;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +30,17 @@ class AzureControllerIntegrationTest {
             public AzureCommandResponse checkLogin(AzureCommandRequest request) {
                 return new AzureCommandResponse("{\"state\": \"Enabled\"}", HttpStatus.SC_OK);
             }
+
+            @Override
+            public AzureCommandResponse runCommand(AzureCommandRequest request, String commandArguments) {
+                return new AzureCommandResponse("ran: " + commandArguments, HttpStatus.SC_OK);
+            }
         };
 
         PasscodeValidator validator = passCode -> "valid-passcode".equals(passCode);
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new AzureController(azureService, validator));
+        registry.setControllerEnabled("Azure", true);
         dispatcher = new ControllerDispatcher(registry);
     }
 
@@ -68,5 +73,31 @@ class AzureControllerIntegrationTest {
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("Enabled"));
+    }
+
+    @Test
+    void shouldRunGenericAzureCommandWhenPasscodeIsValid() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/azure/az/command");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("command", "group list --output json");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("group list --output json"));
+    }
+
+    @Test
+    void shouldRunGenericAzureCommandFromQueryString() throws Exception {
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest(
+                "GET",
+                "/api/azure/az/command?passCode=valid-passcode&command=account%20list%20-o%20json");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(TestResponseUtil.body(response).contains("account%20list%20-o%20json"));
     }
 }
