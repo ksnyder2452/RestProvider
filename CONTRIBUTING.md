@@ -25,8 +25,8 @@ RestProvider is primarily a **Java** project and uses **Maven** for builds.
 
 ### Requirements
 
-- JDK 11 or newer
-- Maven 3.8+
+- JDK 17 or newer
+- Maven 3.9+
 - Git
 
 Verify tools:
@@ -39,9 +39,11 @@ git --version
 
 ## Build and Run (Maven)
 
-Use Maven commands from the repository root:
+All Maven commands must be run from the `java-server/` directory:
 
 ```bash
+cd java-server
+
 # Clean and compile
 mvn clean compile
 
