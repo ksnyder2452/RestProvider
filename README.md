@@ -13,35 +13,52 @@ RestProvider is a multi-integration automation API server for test orchestration
 
 All controllers currently shipped in the Java server are implemented natively.
 
+### Cloud and Platform Integrations
+
 | Controller | Status |
 |---|---|
 | AZPipeline | Complete |
 | Azure | Complete |
-| BrowserStack | Complete |
-| Business | Complete |
 | CosmosDB | Complete |
 | Databricks | Complete |
 | DataFactory | Complete |
 | Dataverse | Complete |
 | FHIR | Complete |
-| File | Complete |
+| StorageAccount | Complete |
+| Synapse | Complete |
+
+### DevOps and Test Tooling
+
+| Controller | Status |
+|---|---|
+| BrowserStack | Complete |
 | Jenkins | Complete |
 | JMeter | Complete |
+| Postman | Complete |
+| SonarQube | Complete |
+
+### Data and Analytics Services
+
+| Controller | Status |
+|---|---|
+| MSD | Complete |
+| Oracle | Complete |
+| PowerBI | Complete |
+| Snowflake | Complete |
+| SQLServer | Complete |
+
+### System and Utility Controllers
+
+| Controller | Status |
+|---|---|
+| Business | Complete |
+| File | Complete |
 | LogAnalytics | Complete |
 | Misc | Complete |
-| MSD | Complete |
 | Office | Complete |
-| Oracle | Complete |
 | OS | Complete |
-| Postman | Complete |
-| PowerBI | Complete |
 | Sequence | Complete |
-| Snowflake | Complete |
-| SonarQube | Complete |
-| SQLServer | Complete |
-| StorageAccount | Complete |
 | String | Complete |
-| Synapse | Complete |
 | Wait | Complete |
 
 Detailed controller notes are maintained in [java-server/MIGRATION_STATUS.md](java-server/MIGRATION_STATUS.md).
@@ -96,16 +113,46 @@ Route shape:
 1. `/api/{controller}/...`
 2. Example: `/api/azure`
 
+Route conventions:
+
+1. Most generalized controllers accept request inputs from headers, query parameters, or both.
+2. Protected routes typically accept either `passCode` or `passcode`.
+3. Alias routes are preserved for backward compatibility while newer, clearer route forms are added.
+
 Representative routes:
 
-1. String echo:
-   - `GET /api/string/echo/{echoMe}`
-2. Wait sleep:
-   - `GET /api/wait/sleep/{seconds}`
-3. Azure CLI login check:
-   - `GET /api/azure/check/azurecli`
-4. Business health:
+1. Platform and cloud:
+   - `GET|POST /api/azure/az/command`
+   - `GET /api/azpipeline/pipeline/runs`, `POST /api/azpipeline/pipeline/run`
+   - `GET|POST /api/cosmosdb` and `GET /api/cosmosdb/container/details`
+   - `GET|POST /api/databricks/sql/query`, `GET /api/databricks/jobs`
+   - `GET /api/datafactory/pipeline/status`, `POST /api/datafactory/pipeline/run`
+   - `GET|POST|PUT|DELETE /api/fhir` and `/api/fhir/{resourceType}/{id...}`
+   - `GET /api/storageaccount/directories`, `GET|POST /api/synapse/query`
+2. DevOps and tooling:
+   - `GET /api/browserstack/build/list`, `GET /api/browserstack/appium/session/list`
+   - `GET|POST|PUT|DELETE /api/jenkins`
+   - `GET /api/jmeter/version`, `GET|POST /api/postman/run/id`
+   - `GET|POST /api/sonarqube/graphql`
+3. Data and analytics:
+   - `GET|POST /api/dataverse/query`, `PUT /api/dataverse/dml`
+   - `GET|POST /api/msd/query`
+   - `GET /api/office/excel/all`, `GET /api/office/excel/range`
+   - `GET|POST /api/oracle/query`, `GET /api/oracle/blob`
+   - `GET|POST|PUT|DELETE /api/powerbi/request`
+   - `GET|POST /api/snowflake/oauth/token`
+   - `GET|POST /api/sqlserver/query`, `GET /api/sqlserver/blob`
+4. System and utility:
    - `GET /api/business/health`
+   - `GET /api/file/exists`, `POST /api/file/upload/local`
+   - `GET /api/loganalytics/message`, `GET /api/loganalytics/message/startswith`
+   - `GET /api/misc/check/vpn`, `GET /api/misc/account/names`
+   - `POST /api/os/session/schedule`, `GET /api/os/env/variable`
+   - `POST /api/sequence/create`, `GET /api/sequence/current`
+   - `GET /api/string/echo/{echoMe}`, `GET /api/string/sha256`
+   - `GET /api/wait/sleep/{seconds}`, `POST /api/wait/wait/until/state/synchronous`
+
+Route details and controller-specific aliases are documented in [java-server/README.md](java-server/README.md).
 
 ## Enable or Disable Controllers
 
