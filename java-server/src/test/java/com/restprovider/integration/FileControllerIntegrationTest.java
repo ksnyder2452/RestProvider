@@ -62,6 +62,75 @@ class FileControllerIntegrationTest {
     }
 
     @Test
+    void shouldSortCsvRowsWithoutShellScripts() throws Exception {
+        String project = "sort_rows_" + System.nanoTime();
+        Path root = Path.of(System.getProperty("user.dir"), "data_files", "temp", project);
+        Files.createDirectories(root);
+        Files.writeString(root.resolve("parent.csv"), "name,value\nb,2\na,1\n", StandardCharsets.UTF_8);
+        Files.writeString(root.resolve("child.csv"), "name,value\nc,3\nb,2\n", StandardCharsets.UTF_8);
+
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/file/sort");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("projectName", project);
+        request.addHeader("parentFile", "parent.csv");
+        request.addHeader("childFile", "child.csv");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertEquals("name,value\na,1\nb,2",
+            Files.readString(root.resolve("parent.csv_sorted"), StandardCharsets.UTF_8).replace("\r", "").trim());
+        Assertions.assertEquals("name,value\nb,2\nc,3",
+            Files.readString(root.resolve("child.csv_sorted"), StandardCharsets.UTF_8).replace("\r", "").trim());
+    }
+
+    @Test
+    void shouldProjectCsvColumnsInJava() throws Exception {
+        String project = "sort_cols_" + System.nanoTime();
+        Path root = Path.of(System.getProperty("user.dir"), "data_files", "temp", project);
+        Files.createDirectories(root);
+        Files.writeString(root.resolve("source.csv"), "A,B,C\n1,2,3\n4,5,6\n", StandardCharsets.UTF_8);
+
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/file/sort/columns");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("projectName", project);
+        request.addHeader("originalFileName", "source.csv");
+        request.addHeader("newFileName", "projected.csv");
+        request.addHeader("columnList", "B,A");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertEquals("B,A\n2,1\n5,4",
+            Files.readString(root.resolve("projected.csv"), StandardCharsets.UTF_8).replace("\r", "").trim());
+    }
+
+    @Test
+    void shouldProjectCsvColumnsUsingExistingListFile() throws Exception {
+        String project = "sort_cols_list_" + System.nanoTime();
+        Path root = Path.of(System.getProperty("user.dir"), "data_files", "temp", project);
+        Files.createDirectories(root);
+        Files.writeString(root.resolve("source.csv"), "A,B,C\n1,2,3\n4,5,6\n", StandardCharsets.UTF_8);
+        Files.writeString(root.resolve("columns.txt"), "C A", StandardCharsets.UTF_8);
+
+        BasicClassicHttpRequest request = new BasicClassicHttpRequest("POST", "/api/file/sort/columns/existinglist");
+        request.addHeader("passCode", "valid-passcode");
+        request.addHeader("projectName", project);
+        request.addHeader("originalFileName", "source.csv");
+        request.addHeader("newFileName", "projected.csv");
+        request.addHeader("existingListFileName", "columns.txt");
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+
+        dispatcher.handle(request, response, TestHttpContexts.newContext());
+
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertEquals("C,A\n3,1\n6,4",
+            Files.readString(root.resolve("projected.csv"), StandardCharsets.UTF_8).replace("\r", "").trim());
+    }
+
+    @Test
     void shouldUploadFileToLocalRoute() throws Exception {
         String project = "upload_" + System.nanoTime();
         BasicClassicHttpRequest request = new BasicClassicHttpRequest(

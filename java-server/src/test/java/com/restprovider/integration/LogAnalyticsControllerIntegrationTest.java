@@ -9,6 +9,9 @@ import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class LogAnalyticsControllerIntegrationTest {
     private ControllerDispatcher dispatcher;
@@ -16,8 +19,8 @@ class LogAnalyticsControllerIntegrationTest {
     @BeforeEach
     void setup() {
         PasscodeValidator validator = passCode -> "valid-passcode".equals(passCode);
-        LogAnalyticsController.CommandRunner runner = (command, args) -> "ok";
-        LogAnalyticsController.FileContentReader reader = path -> "{\"Message\": \"Pipeline failed due to timeout\"}";
+        LogAnalyticsController.CommandRunner runner = (command, args) -> "{\"Message\": \"Pipeline failed due to timeout\"}";
+        LogAnalyticsController.FileContentReader reader = path -> Files.readString(path, StandardCharsets.UTF_8);
 
         ControllerRegistry registry = new ControllerRegistry();
         registry.register(new LogAnalyticsController(validator, runner, reader));
@@ -50,6 +53,9 @@ class LogAnalyticsControllerIntegrationTest {
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("Pipeline failed"));
+        Path output = Path.of(System.getProperty("user.dir"), "data_files", "temp", "log_proj", "tc1_loganalytics.out");
+        Assertions.assertTrue(Files.exists(output));
+        Assertions.assertTrue(Files.readString(output, StandardCharsets.UTF_8).contains("Pipeline failed due to timeout"));
     }
 
     @Test
@@ -80,6 +86,8 @@ class LogAnalyticsControllerIntegrationTest {
 
         Assertions.assertEquals(200, response.getCode());
         Assertions.assertTrue(TestResponseUtil.body(response).contains("Pipeline failed"));
+        Path output = Path.of(System.getProperty("user.dir"), "data_files", "temp", "log_proj", "tc1_loganalytics.out");
+        Assertions.assertTrue(Files.exists(output));
     }
 
     @Test
