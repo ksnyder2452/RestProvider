@@ -7,4 +7,6 @@ public interface AzureService {
     AzureCommandResponse setExtensionsNoPrompt(AzureCommandRequest request);
 
     AzureCommandResponse checkLogin(AzureCommandRequest request);
+
+    AzureCommandResponse runCommand(AzureCommandRequest request, String commandArguments);
 }

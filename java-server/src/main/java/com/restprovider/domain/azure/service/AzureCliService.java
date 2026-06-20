@@ -34,4 +34,31 @@ public class AzureCliService implements AzureService {
                 : HttpStatus.SC_NOT_ACCEPTABLE;
         return new AzureCommandResponse(result, statusCode);
     }
+
+    @Override
+    public AzureCommandResponse runCommand(AzureCommandRequest request, String commandArguments) {
+        String normalized = normalizeCommandArguments(commandArguments);
+        if (normalized.isBlank()) {
+            return new AzureCommandResponse("Missing required command arguments", HttpStatus.SC_BAD_REQUEST);
+        }
+
+        String result = processExecutionService.run(
+                "az",
+                normalized,
+                request.getContext().getStepName(),
+                request.getContext().getProjectName());
+
+        int statusCode = result.startsWith("Process failed:")
+                ? HttpStatus.SC_INTERNAL_SERVER_ERROR
+                : HttpStatus.SC_OK;
+        return new AzureCommandResponse(result, statusCode);
+    }
+
+    private static String normalizeCommandArguments(String commandArguments) {
+        String value = commandArguments == null ? "" : commandArguments.trim();
+        if (value.toLowerCase().startsWith("az ")) {
+            value = value.substring(3).trim();
+        }
+        return value;
+    }
 }
