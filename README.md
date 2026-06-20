@@ -7,7 +7,6 @@ RestProvider is a multi-integration automation API server for test orchestration
 - Java server: [java-server](java-server)
 - Shell and container scripts: [ShellCommand](ShellCommand)
 - Data files and templates: [data_files](data_files)
-- Postman collections: [Postman_demos](Postman_demos)
 
 ## Controller Coverage
 
@@ -192,13 +191,6 @@ Core components:
    - [java-server/src/main/java/com/restprovider/domain](java-server/src/main/java/com/restprovider/domain)
 4. Unified Log4j2 logging configuration.
    - [java-server/src/main/resources/log4j2.xml](java-server/src/main/resources/log4j2.xml)
-
-## API Testing With Postman
-
-1. Import collection files from [Postman_demos](Postman_demos).
-2. Set collection variables for host and required headers.
-3. Execute smoke routes first, such as String, Wait, and Business endpoints.
-4. Execute integration-specific routes after credentials or environment variables are configured.
 
 ## Validation
 
