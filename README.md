@@ -1,7 +1,6 @@
 # RestProvider
 
 [![Java Tests (push)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml/badge.svg?event=push)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml)
-[![Java Tests (PR)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml/badge.svg?event=pull_request)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
 
 RestProvider is a multi-integration automation API server for test orchestration and utility workflows. The Java server under [java-server](java-server) now provides native implementations for every controller with defined routes.
