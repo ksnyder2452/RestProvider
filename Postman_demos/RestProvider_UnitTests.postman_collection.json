@@ -1,0 +1,7089 @@
+{
+	"info": {
+		"_postman_id": "78259cb9-d97a-44c8-b3a7-b62048d4cb2c",
+		"name": "RestProvider Unit Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23915416",
+		"_collection_link": "https://martian-water-644952.postman.co/workspace/New-Team-Workspace~4d5f155e-0395-42ed-ac64-2007966c9927/collection/23915416-78259cb9-d97a-44c8-b3a7-b62048d4cb2c?action=share&source=collection_link&creator=23915416"
+	},
+	"item": [
+		{
+			"name": "Appium",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Appium",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "API calls to interact with a local Appium instance"
+		},
+		{
+			"name": "AZ Pipeline",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_AZPipeline",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List pipeline runs. Need to fill in organization and project and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List pipeline runs",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_AZPipeline",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "project",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/az/pipeline/runs",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"az",
+								"pipeline",
+								"runs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List pipeline run details using az. Build/Run ID can be retrieved via 'az pipelines runs list' (parameter 'uri'). Need to fill in the organization, project and runId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List pipeline run details using az. Build/Run ID can be retrieved via 'az pipelines runs list' (parameter 'uri')",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_AZPipeline",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "project",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "runId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/az/pipeline/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"az",
+								"pipeline",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Poll for pipeline run complete. Build/Run ID can be retrieved via 'az pipelines runs list' (parameter 'uri'). Need to fill in organization, project, runId and numberLoops and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Poll for pipeline run complete. Build/Run ID can be retrieved via 'az pipelines runs list' (parameter 'uri')",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_AZPipeline",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "project",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "runId",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "numberLoops",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/az/pipeline/run/waituntilcomplete",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"az",
+								"pipeline",
+								"run",
+								"waituntilcomplete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Run a Pipeline Build with no (expected) delay/wait until. Need to fill in organization, project and pipelineName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Run a Pipeline Build with no (expected) delay/wait until",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_AZPipeline",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "project",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "pipelineName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/az/pipeline/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"az",
+								"pipeline",
+								"run"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with an Azure Pipeline. Generally need to know the organization, project and run ID\n    \n- Should be logged in to Azure (az login or Server Principal)"
+		},
+		{
+			"name": "Azure",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Azure",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Configure AZ extensions install to yes without prompt. Need to fill in passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Configure AZ extensions install to yes without prompt",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Azure",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/az/extensions/config?",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"az",
+								"extensions",
+								"config"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check that the connection to the Azure Client is active. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check that the connection to the Azure Client is active"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous"
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/check/azurecli",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"check",
+								"azurecli"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with general Azure functions\n    \n- Should be logged in to Azure (az login or Server Principal)"
+		},
+		{
+			"name": "BrowserStack",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack session list. Need to fill in buildId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack session list",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "buildId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/session/list",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"session",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack build list. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack build list",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/build/list",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"build",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack session details. Need to fill in sessionId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack session details",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sessionId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/session/details",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"session",
+								"details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack/Appium build list. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack/Appium build list",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/appium/build/list",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"appium",
+								"build",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack/Appium build details (hashed_id should be the session id). Need to fill in buildId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack/Appium build details (hashed_id should be the session id)",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "buildId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/appium/build/details",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"appium",
+								"build",
+								"details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a BrowserStack/Appium session details. Need to fill in sessionId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a BrowserStack/Appium session details"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_BrowserStack"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sessionId",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/browserstack/appium/session/details",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"browserstack",
+								"appium",
+								"session",
+								"details"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with BrowserStack\n    \n- Generally depends on Build Ids and Session Ids\n    \n- Can also impact Appium instances (for things like downloading log data)"
+		},
+		{
+			"name": "Business",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Business",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Used to introduce custom Business Login into your RestProvider instance"
+		},
+		{
+			"name": "Cosmos DB",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query CosmosDB using a SQL (DML) statement. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query CosmosDB using a SQL (DML) statement.",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "select top 10 * from Appointment",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "cosmosDatabaseId",
+								"value": "AppointmentService",
+								"type": "text"
+							},
+							{
+								"key": "cosmosContainerId",
+								"value": "Appointment",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb"
+							]
+						},
+						"description": "Reference: Azure Cosmos DB NoSQL quickstart documentation."
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a list of all CosmosDB Databases. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a list of all CosmosDB databases"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/databases",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"databases"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Cosmos DB Container details. Need to fill in passCode, containerName and databaseName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a list of all CosmosDB databases"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "containerName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "databaseName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/database/container/details",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"database",
+								"container",
+								"details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Cosmos DB Database details. Need to fill in passCode and databaseName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a list of all CosmosDB databases"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "databaseName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/database/details",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"database",
+								"details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a list of all CosmosDB containers for the specified database. Need to fill in databaseId and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a list of all CosmosDB containers for the specified database"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "databaseId",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/containers",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"containers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a comma-separated list of Cosmos DB databases that contain the specified Container. Need to fill in Container name to search for and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a comma-separated list of Cosmos DB databases that contain the specified Container. Depends on environment variable cosmosdb_account"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "filterForContainer",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/database/container",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"database",
+								"container"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a comma-separated list of Cosmos DB databases that contain a matched Container (case-insensitive and one character can differ). Need to fill in Container name to search for and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a comma-separated list of Cosmos DB databases that contain the specified Container. Depends on environment variable cosmosdb_account"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "filterForContainer",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/database/container/match",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"database",
+								"container",
+								"match"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a comma-separated list of matched Cosmos DB containers that contain the specified name/value pair. Need to fill in parameterName and parameterValue and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a comma-separated list of matched Cosmos DB containers that contain the specified name/value pair. Depends on environment variable cosmosdb_account"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_CosmosDB"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "parameterName",
+								"value": ""
+							},
+							{
+								"key": "parameterValue",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/cosmosdb/database/container/matchonvalue",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"cosmosdb",
+								"database",
+								"container",
+								"matchonvalue"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls that query Cosmos DB instances\n    \n- Generally requires Container ID, Database ID and a SQL statement\n    \n- Results are usually outputed to a text file\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Cosmos DB (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Databricks",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Databricks using a SQL (DML) statement. Need to fill in SQL_Statement, catalog, schema, serverHostName and qasqlWarehouse and passCode. databricks_pat needs to be set as an environment variable",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Databricks using a SQL (DML) statement. Depends on Environment variable databricks_pat"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "catalog",
+								"value": ""
+							},
+							{
+								"key": "schema",
+								"value": ""
+							},
+							{
+								"key": "serverHostName",
+								"value": ""
+							},
+							{
+								"key": "sqlWarehouse",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/databricks",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"databricks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get last Databricks run details. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get last Databricks run details",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/databricks/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"databricks",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Run Databricks Job. Need to fill in jobId and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Run Databricks Job",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks",
+								"type": "text"
+							},
+							{
+								"key": "jobId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/databricks/job/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"databricks",
+								"job",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wake the SQL Starter Warehouse. databricks_pat needs to be set as an environment variable. Need to fill in passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake the SQL Starter Warehouse",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/databricks/warehouse/wake",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"databricks",
+								"warehouse",
+								"wake"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Databricks cluster. Need to fill in clusterId and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Start Databricks cluster"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Databricks"
+							},
+							{
+								"key": "clusterId",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/databricks/cluster",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"databricks",
+								"cluster"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls that query Databricks instances\n    \n- Generally requires Catalog, Schema, Server name, a Warehouse Id and a SQL statement\n    \n- Results are usually outputed to a text file\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Databricks (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Data Factory",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataFactory",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check for a specific pipeline status. Need to fill in pipelineRunId and expectedStatus and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check for a specific pipeline status",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataFactory",
+								"type": "text"
+							},
+							{
+								"key": "pipelineRunId",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "expectedStatus",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/datafactory/pipeline/status",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"datafactory",
+								"pipeline",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a new Pipeline Run. Need to fill in fileName, pipelineRunId and pipelineName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Create a new Pipeline Run"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataFactory"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "pipelineRunId",
+								"value": ""
+							},
+							{
+								"key": "pipelineName",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/datafactory/pipeline/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"datafactory",
+								"pipeline",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for a pipeline run to complete. Need to fill in pipelineRunId and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait for a pipeline run to complete"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataFactory"
+							},
+							{
+								"key": "pipelineRunId",
+								"value": ""
+							},
+							{
+								"key": "expectedStatus",
+								"value": "Succeeded"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/datafactory/pipeline/waitfor",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"datafactory",
+								"pipeline",
+								"waitfor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Pipeline Names. Need to fill in passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List all Pipeline Names"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataFactory"
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/datafactory/pipelines",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"datafactory",
+								"pipelines"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls that integrate with Data Factory Pipeline runs\n    \n- Generally requires pipeline run Ids, status and pipeline names"
+		},
+		{
+			"name": "Data Management",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_DataManagement",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "API calls that integrate with (patient) life cycle tools"
+		},
+		{
+			"name": "Dataverse",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Dataverse",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Dataverse using a SQL (DML) statement. Need to fill in sql_statement and dv_environment and passCode. dv_user and dv_password need to be set as an environment variable",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Dataverse using a SQL (DML) statement",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Dataverse",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "dv_environment",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/dataverse",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"dataverse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DDL statement against a Dataverse instance. Need to fill in sql_statement and dv_environment and passCode. dv_user and dv_password need to be set as an environment variable",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DDL statement against a Dataverse instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Dataverse",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "dv_environment",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/dataverse/ddl",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"dataverse",
+								"ddl"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Create or Update statement against a Dataverse instance. Need to fill in sql_statement and dv_environment and passCode. dv_user and dv_password need to be set as an environment variable",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Create or Update statement against a Dataverse instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Dataverse",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "dv_environment",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/dataverse",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"dataverse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Delete or Remove against a Dataverse instance. Need to fill in sql_statement and dv_environment and passCode. dv_user and dv_password need to be set as an environment variable",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Delete or Remove against a Dataverse instance"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Dataverse"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "dv_environment",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/dataverse",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"dataverse"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls that integrate with Dataverse instances\n    \n- Generally requires a SQL Statement and details on the Dataverse environment\n    \n- Also generally dependent on Environment Variables dv_user and dv_password\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Dataverse (by limiting connections to a single test account)"
+		},
+		{
+			"name": "FHIR",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_FHIR",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a FHIR Azure PaaS GET call. Need to fill in objectType and passCode. fhir_token needs to be set as an environment variable",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Send a FHIR Azure PaaS GET call",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_FHIR",
+								"type": "text"
+							},
+							{
+								"key": "objectType",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/fhir",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"fhir"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a FHIR Azure PaaS POST call. Need to fill in objectType and passCode. fhir_token needs to be set as an environment variable",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Send a FHIR Azure PaaS POST call",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_FHIR",
+								"type": "text"
+							},
+							{
+								"key": "objectType",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/fhir",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"fhir"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a FHIR Azure PaaS PUT call. Need to fill in objectType and passCode. fhir_token needs to be set as an environment variable",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Send a FHIR Azure PaaS PUT call",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_FHIR",
+								"type": "text"
+							},
+							{
+								"key": "objectType",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/fhir",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"fhir"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a FHIR Azure PaaS DELETE call. Need to fill in objectType and passCode. fhir_token needs to be set as an environment variable",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Send a FHIR Azure PaaS DELETE call"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_FHIR"
+							},
+							{
+								"key": "objectType",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/fhir",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"fhir"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to integrate with a FHIR Server\n    \n- The Server name is passed in via variable.properties, while the objectType generally is passed in as a Header\n    \n- The FHIR token can be passed in using a variety of methods (the simplest is probably as Environment Variable fhir_token)\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to your FHIR Server (by limiting connections to a single test account)"
+		},
+		{
+			"name": "File",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check for the existence of a file. Need to fill in filePath and fileName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check for the existence of a file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "../../templates/",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "readme.txt",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/exists",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"exists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort both Rows and Columns in 2 csv files (expected output, SQL query). The Column order is based on the expected output file by default. Need to fill in parentFile and childFile and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Sort both Rows and Columns in 2 csv files (expected output, SQL query). The Column order is based on the expected output file by default",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "parentFile",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "childFile",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sort",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sort"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort rows in a csv file. Need to fill in originalFile and newFile and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Sort rows in a csv file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "originalFile",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "newFile",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sort/rows",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sort",
+								"rows"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort columns in a csv file. Need to fill in originalFileName and newFileName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Sort columns in a csv file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "originalFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "newFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sort/columns",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sort",
+								"columns"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort columns in a csv file based on existing column list. Need to fill in originalFileName and newFileName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Sort columns in a csv file based on existing column list",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "originalFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "newFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sort/columns/existinglist",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sort",
+								"columns",
+								"existinglist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Copy file. Need to fill in originalFilePath, originalFileName, newFilePath, newFileName and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Copy file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "originalFilePath",
+								"value": "../../templates/",
+								"type": "text"
+							},
+							{
+								"key": "originalFileName",
+								"value": "readme.txt",
+								"type": "text"
+							},
+							{
+								"key": "newFilePath",
+								"value": ".",
+								"type": "text"
+							},
+							{
+								"key": "newFileName",
+								"value": "readme_copyfile.txt",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InsightBridge copy file. Need to fill in originalFilePath, originalFileName, newFilePath, newFileName and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Copy file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "originalFilePath",
+								"value": "../../templates/",
+								"type": "text"
+							},
+							{
+								"key": "originalFileName",
+								"value": "readme.txt",
+								"type": "text"
+							},
+							{
+								"key": "newFilePath",
+								"value": ".",
+								"type": "text"
+							},
+							{
+								"key": "newFileName",
+								"value": "readme_copyfile.txt",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file2",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a file. Need to fill in filePath and fileName and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Delete a file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read from a text file. Need to fill in filePath and fileName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Read from a text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "../../templates/",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "readme.txt",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read from a json file. Need to fill in filePath and fileName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Read from a json file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/json",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"json"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Write to a text file. Need to fill in filePath, fileName, deleteIfExists and contents and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Write to a text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "deleteIfExists",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "contents",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete matching lines from text file. Need to fill in filePath, fileName and matchedStringInLine and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Delete matching lines from text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "matchedStringInLine",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/line",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"line"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Match line with text file. Need to fill in filePath, fileName and matchStringInLine and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Match line with text file"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File"
+							},
+							{
+								"key": "filePath",
+								"value": "../../templates/"
+							},
+							{
+								"key": "fileName",
+								"value": "readme.txt"
+							},
+							{
+								"key": "matchStringInFile",
+								"value": "directory"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/line",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"line"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Append line to text file. Need to fill in filePath, fileName and textLine and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Append line to text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "textLine",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/line",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"line"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Replace line in text file. Need to fill in filePath, fileName, matchLine and replaceWith and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Replace line in text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "matchLine",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "replaceWith",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/line",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"line"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Append a column to a text file. Need to fill in filePath, fileName and columnDefinition and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Append a column to a text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "columnDefinition",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/column",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"column"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a column (by number) from csv file. Need to fill in filePath, fileName and columnNumber and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Delete a column (by number) from csv file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "columnNumber",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/column",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"column"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Compare two text files. Generally used to compare an Expected Output file to the Actual Output file. Note that the comparison files and results will be copied to ./data_files/failures. Need to fill in file1, file2 and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Compare two text files. Generally used to compare an Expected Output file to the Actual Output file. Note that the comparison files and results will be copied to ./data_files/failures",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "file1",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "file2",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/diff",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"diff"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unzip file to folder (using 7zip). z7 files can be chunked. Need to fill in folderNameFrom, fileName and folderNameTo and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Unzip file to folder (using 7zip). z7 files can be chunked",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "folderNameFrom",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "folderNameTo",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/unzip",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"unzip"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InsightBridge unzip file to folder (using 7zip). z7 files can be chunked. Need to fill in folderNameFrom, fileName and folderNameTo and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Unzip file to folder (using 7zip). z7 files can be chunked",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "folderNameFrom",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "folderNameTo",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/unzip2",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"unzip2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve file over SFTP. Need to fill in serverIP, remoteFileReference and localFileName and passCode. Depends on Environment Variables sftpUser and sftpPass",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve file over SFTP",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "serverIP",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "remoteFileReference",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "localFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sftp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sftp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Push file to FTP server. Need to fill in serverIP, remoteFileReference and localFileName and passCode. Depends on Environment Variables sftpUser and sftpPass",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Push file to FTP server",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "serverIP",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "remoteFileReference",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "localFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/sftp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"sftp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Compare 2 binary files. Need to fill in file1 and file2 and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Compare 2 binary files",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File",
+								"type": "text"
+							},
+							{
+								"key": "file1",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "file2",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/diff/binary",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"diff",
+								"binary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download file from Rest Bridge to your local machine. Need to fill in fileName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Download file from Rest Bridge to your local machine"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File"
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/local",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"local"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload file from your local environment to your project folder on the Rest Bridge. Need to fill in fileName and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}:Upload file from your local environment to your project folder on the Rest Bridge"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File"
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/local",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"local"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve all File Names in a specified Folder. Recursion is not supported. Need to fill in folderName and passcode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Download file from Rest Bridge to your local machine"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File"
+							},
+							{
+								"key": "folderName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/names",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"names"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve all Folder Names in a specified Folder. Recursion is not supported. Need to fill in folderName and passcode Copy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Download file from Rest Bridge to your local machine"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_File"
+							},
+							{
+								"key": "folderName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/folder/names",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"folder",
+								"names"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls used to interact with the file system and manipulate/modify local files and local filenames\n    \n- File/Compare is commonly used as a test case Validation technique (matched response code is 200, failed match returns response code 406)"
+		},
+		{
+			"name": "Grafana",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Grafana",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to integrate with Grafana instances - this provides simple control across data sources and reporting tools\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Grafana (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Jenkins",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Jenkins",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Jenkins POST. Need to fill in subURI and serverName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Jenkins POST",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Jenkins",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "subURI",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "serverName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jenkins",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jenkins"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Jenkins GET. Need to fill in subURI and serverName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Jenkins GET",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Jenkins",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "subURI",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "serverName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jenkins",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jenkins"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Jenkins DELETE. Need to fill in subURI and serverName and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Jenkins DELETE",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Jenkins",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "subURI",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "serverName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jenkins",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jenkins"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Jenkins PUT. Need to fill in subURI and serverName and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Jenkins PUT"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Jenkins"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "subURI",
+								"value": ""
+							},
+							{
+								"key": "serverName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jenkins",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jenkins"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to integrate with Jenkins instances - this provides simple controls that span test frameworks\n    \n- Generally requires the sub URI and the Server name\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Jenkins (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Log Analytics",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_LogAnalytics",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Log Analytics for a specific Error message. Need to fill in runId, fileName and expectedMessage and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Log Analytics for a specific Error message",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_LogAnalytics",
+								"type": "text"
+							},
+							{
+								"key": "runId",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "expectedMessage",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/loganalytics/message",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"loganalytics",
+								"message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Log Analytics for Error message beginning with the provided string. Need to fill in runId, fileName and expectedMessage and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Log Analytics for Error message beginning with the provided string",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_LogAnalytics",
+								"type": "text"
+							},
+							{
+								"key": "runId",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "expectedMessage",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/loganalytics/message/startswith",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"loganalytics",
+								"message",
+								"startswith"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Log Analytics for Error Message ending with the provided string. Need to fill in runId, fileName and expectedMessage and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Log Analytics for Error Message ending with the provided string"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_LogAnalytics"
+							},
+							{
+								"key": "runId",
+								"value": ""
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "expectedMessage",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/loganalytics/message/endswith",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"loganalytics",
+								"message",
+								"endswith"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query Log Analytics\n    \n- Generally requires run Id, file name and search string"
+		},
+		{
+			"name": "Miscellaneous",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check that the connection to a Network has been made (by validating the Network ID). Need to fill in expectedNetwork",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check that the connection to a Network has been made (by validating the Network ID)",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "expectedNetwork",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/check/vpn",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"check",
+								"vpn"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check that the host is reachable. Need to fill in hostName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check that the host is reachable",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "hostName",
+								"value": "localhost",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/heartbeat",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"heartbeat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate the difference between 2 times. Need to fill in beginTime and endTime",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Calculate the difference between 2 times",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "beginTime",
+								"value": "2009-06-15T13:45:30",
+								"type": "text"
+							},
+							{
+								"key": "endTime",
+								"value": "2009-06-15T15:45:30",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/time/diff",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"time",
+								"diff"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a property from a property file. Need to fill in filePath, fileName, propertyName and passcode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a property from a property file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "filePath",
+								"value": "../../templates/",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "sample_var.properties",
+								"type": "text"
+							},
+							{
+								"key": "propertyName",
+								"value": "sample_var1",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/file/property",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"file",
+								"property"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Run some generic process with no results analysis. Need to fill in processName and processArguments",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Run some generic process with no results analysis",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "processName",
+								"value": "echo",
+								"type": "text"
+							},
+							{
+								"key": "processArguments",
+								"value": "\"Hello there\"",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/process/run",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"process",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all variables from variable.properties. Need to fill in passcode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get all variables from variable.properties",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/variables",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"variables"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reread all variables from variable.properties and create the temporary and failures folders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get all variables from variable.properties and create the temporary and failures folders",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a random Integer. Need to fill in minVal and maxVal",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a random Integer",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "minVal",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "maxVal",
+								"value": "1000",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/random/integer",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"random",
+								"integer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a random Double between 0.0 and 1.0",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a random Double between 0.0 and 1.0",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/random/double",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"random",
+								"double"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a random date between 2 dates. Need to fill in minDate and maxDate",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a random date between 2 dates",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "minDate",
+								"value": "01/01/2024",
+								"type": "text"
+							},
+							{
+								"key": "maxDate",
+								"value": "02/01/2024",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/random/date",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"random",
+								"date"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a random String. Need to fill in length and allowSpecialCharacters",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get a random String",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "length",
+								"value": "5",
+								"type": "text"
+							},
+							{
+								"key": "allowSpecialCharacters",
+								"value": "No",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/random/string",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"random",
+								"string"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reread environment variables from a property file. Need to fill in fileName, relativeFilePath and propertyName",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Update environment variables from a property file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous",
+								"type": "text"
+							},
+							{
+								"key": "fileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "relativeFilePath",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "propertyName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/credential",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"credential"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a variable from variable.properties. Need to fill in passcode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a variable from variable.properties"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous"
+							},
+							{
+								"key": "variableName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/data/variable",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"data",
+								"variable"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Account Names from variable.properties as a comma-separated string. Need to fill in passcode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a variable from variable.properties"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Miscellaneous"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/account/names",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"account",
+								"names"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls that do not fit within other Controllers\n- Things like\n    \n    - Check host access\n    - Get variables from files\n    - Retrieve Random values\n    - Set environment variable using value from property file"
+		},
+		{
+			"name": "MSD",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_MSD",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query MSD using a SQL (DML) statement. Need to fill in SQL_Statement and msd_server and passCode. Depends on Environment Variables azure_account and azure_pwd",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query MSD using a SQL (DML) statement"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_MSD"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "msd_server",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/msd",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"msd"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query MSD\n    \n- Generally requires SQL statements and a server name and environment variables azure_user and azure_pwd\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to MSD (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Office",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Office",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read a table from a xlsx document and write the output to a text file. Need to fill in relativeInputFilePath, worksheetName and deleteIfExists and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Read a table from a xlsx document and write the output to a text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Office",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "relativeInputFilePath",
+								"value": "../../templates/Sample1.xlsx",
+								"type": "text"
+							},
+							{
+								"key": "worksheetName",
+								"value": "Contacts",
+								"type": "text"
+							},
+							{
+								"key": "deleteIfExists",
+								"value": "Yes",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/office/excel/all",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"office",
+								"excel",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read part of a table from a xlsx document and write the output to a text file. Need to fill in relativeInputFilePath, worksheetName, deleteIfExists, rowStart, colStart, rowEnd, colEnd and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Read part of a table from a xlsx document and write the output to a text file",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Office",
+								"type": "text"
+							},
+							{
+								"key": "relativeInputFilePath",
+								"value": "../../templates/Sample1.xlsx",
+								"type": "text"
+							},
+							{
+								"key": "worksheetName",
+								"value": "Contacts",
+								"type": "text"
+							},
+							{
+								"key": "deleteIfExists",
+								"value": "Yes",
+								"type": "text"
+							},
+							{
+								"key": "rowStart",
+								"value": "6",
+								"type": "text"
+							},
+							{
+								"key": "colStart",
+								"value": "C",
+								"type": "text"
+							},
+							{
+								"key": "rowEnd",
+								"value": "7",
+								"type": "text"
+							},
+							{
+								"key": "colEnd",
+								"value": "D",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/office/excel/bycoordinates",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"office",
+								"excel",
+								"bycoordinates"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to access MS office documents (Excel, Word, Outlook)\n    \n- Current support is for reading .xlsx spreadsheets"
+		},
+		{
+			"name": "Oracle",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Oracle using a SQL (DML) statement. Need to fill in sql_statement and sql_connection and passCode. Depends on environment variables oracle_user and oracle_password",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Oracle using a SQL (DML) statement"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "sql_connection",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/oracle",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"oracle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DDL statement against an Oracle instance. Need to fill in sql_statement and sql_connection and passCode. Depends on environment variables oracle_user and oracle_password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DDL statement against an Oracle instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "sql_connection",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/oracle/ddl",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"oracle",
+								"ddl"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Create or Update statement against an Oracle instance. Need to fill in sql_statement and sql_connection and passCode. Depends on environment variables oracle_user and oracle_password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Create or Update statement against an Oracle instance"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "sql_connection",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/oracle",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"oracle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Delete or Remove statement against an Oracle instance. Need to fill in sql_statement and sql_connection and passCode. Depends on environment variables oracle_user and oracle_password",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Delete or Remove statement against an Oracle instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "sql_connection",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/oracle",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"oracle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a BLOB from an Oracle instance. Need to fill in fileName, sql_connection and sql_statement and passCode. Depends on environment variables oracle_user and oracle_password",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve a BLOB from an Oracle instance"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Oracle"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "sql_connection",
+								"value": ""
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/oracle/blob",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"oracle",
+								"blob"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query Oracle database instances\n    \n- Generally requires sql_connection and sql_statement, along with environment variables oracle_user and oracle_password\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Oracle (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Operating System",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the year",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get the year"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/year",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"year"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the month",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get the month",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/month",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"month"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the local time",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get the local time",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/time",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"time"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the local IP address",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get the local IP address",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/ip",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"ip"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a folder. Need to fill in recreate (Yes/No) and folderName",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Create a folder",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							},
+							{
+								"key": "recreate",
+								"value": "No",
+								"type": "text"
+							},
+							{
+								"key": "folderName",
+								"value": "sample_os",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/folder",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"folder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return the physical root folder",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Return the physical root folder",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/folder",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"folder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete the folder contents. Need to fill in folderName",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Delete the folder contents",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							},
+							{
+								"key": "folderName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/folder/contents",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"folder",
+								"contents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the value of an environment variable. Need to fill in varName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Get the value of an environment variable",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							},
+							{
+								"key": "varName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/variable",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"variable"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set value of environment variable. Need to fill in varName and varValue",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Set value of environment variable",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							},
+							{
+								"key": "varName",
+								"value": "os_sample_var",
+								"type": "text"
+							},
+							{
+								"key": "varValue",
+								"value": "Hello there",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/variable",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"variable"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule a Session run. Need to fill in sessionName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Schedule a Session run",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "insightlink",
+								"type": "text"
+							},
+							{
+								"key": "sessionName",
+								"value": "3180447190351967",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "6df8655de34df7fa6b0ad2f20fda0c4cb92245e78c530e1d629c61fab67ce548",
+								"type": "text"
+							},
+							{
+								"key": "maxRuns",
+								"value": "10",
+								"type": "text"
+							},
+							{
+								"key": "schedule",
+								"value": "0 * * * * ?",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/insightlink/session/schedule",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"insightlink",
+								"session",
+								"schedule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View the crontab entries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: View the crontab entries",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_OperatingSystem",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/crontab",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"crontab"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with the local Container OS\n    \n- Things like\n    \n    - getting and setting environment variables\n        \n    - scheduling tasks\n        \n    - getting the current time\n        \n    - returning the root folder"
+		},
+		{
+			"name": "Postman",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Postman",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Postman Client status. Need to fill in postmanUser. Depends on environment variable postman_key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check Postman Client status",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Postman",
+								"type": "text"
+							},
+							{
+								"key": "postmanUser",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/postman/status",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"postman",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Launch a Postman Collection. Need to fill in collectionId. Depends on environment variable postman_key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Launch a Postman Collection",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Postman",
+								"type": "text"
+							},
+							{
+								"key": "collectionId",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/postman/run/id",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"postman",
+								"run",
+								"id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Launch a Postman Collection using a Collection file path. Need to fill in collectionPath. Depends on environment variable postman_key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Launch a Postman Collection using a Collection file path",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Postman",
+								"type": "text"
+							},
+							{
+								"key": "collectionPath",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/postman/run/file",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"postman",
+								"run",
+								"file"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with Postman instances\n    \n- Used primarily to trigger new test runs"
+		},
+		{
+			"name": "Power BI",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_PowerBI",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pass through a Power BI GET Request. Need to fill in powerBIRequest, organization and apiVersion and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Pass through a Power BI GET Request",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_PowerBI",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "powerBIRequest",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "apiVersion",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/powerbi",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"powerbi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pass through a Power BI POST Request. Need to fill in powerBIRequest, organization and apiVersion and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Pass through a Power BI POST Request",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_PowerBI",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "powerBIRequest",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "apiVersion",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/powerbi",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"powerbi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pass through a Power BI PUT Request. Need to fill in powerBIRequest, organization and apiVersion and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Pass through a Power BI GET Request",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_PowerBI",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "powerBIRequest",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "organization",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "apiVersion",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/powerbi",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"powerbi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pass through a Power BI DELETE Request. Need to fill in powerBIRequest, organization and apiVersion and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Pass through a Power BI DELETE Request"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_PowerBI"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "powerBIRequest",
+								"value": ""
+							},
+							{
+								"key": "organization",
+								"value": ""
+							},
+							{
+								"key": "apiVersion",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/powerbi",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"powerbi"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to integrate with Power BI instances\n    \n- This provides simple control across data sources and reporting tools\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to PowerBI (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Sequence",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Sequence",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Sequence. Need to fill in sequenceName, recreateIfExists, minVal and incrementBy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Create a sequence",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "insightlink",
+								"type": "text"
+							},
+							{
+								"key": "sequenceName",
+								"value": "3180447190351967",
+								"type": "text"
+							},
+							{
+								"key": "recreateIfExists",
+								"value": "No",
+								"type": "text"
+							},
+							{
+								"key": "minVal",
+								"value": "0",
+								"type": "text"
+							},
+							{
+								"key": "incrementBy",
+								"value": "2",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sequence",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sequence"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a sequence. Need to fill in sequenceName",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Delete a sequence",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "insightlink",
+								"type": "text"
+							},
+							{
+								"key": "sequenceName",
+								"value": "3180447190351967",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sequence",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sequence"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve the next sequence value. Need to fill in sequenceName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}:Retrieve the next sequence value",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "insightlink",
+								"type": "text"
+							},
+							{
+								"key": "sequenceName",
+								"value": "3180447190351967",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sequence/nextval",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sequence",
+								"nextval"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve the current sequence value. Need to fill in sequenceName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve the current sequence value",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "insightlink",
+								"type": "text"
+							},
+							{
+								"key": "sequenceName",
+								"value": "3180447190351967",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sequence/currval",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sequence",
+								"currval"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to create and interact with Sequences\n    \n- Note that these Sequences can span test case runs if desired"
+		},
+		{
+			"name": "Snowflake",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Snowflake",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve the Snowflake OAUTH token. Need to fill in az_token_endpoint and az_scope and passCode. Depends on environment variables az_user, az_password, oauth_client_id and oauth_client_secret",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve the Snowflake OAUTH token"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Snowflake"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "az_token_endpoint",
+								"value": ""
+							},
+							{
+								"key": "az_scope",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/snowflake/token",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"snowflake",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query Snowflake instances\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Snowflake (by limiting connections to a single test account)"
+		},
+		{
+			"name": "SonarQube",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SonarQube",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a GraphQL Sonarqube request. Need to fill in serverName and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Send a GraphQL Sonarqube request"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SonarQube"
+							},
+							{
+								"key": "serverName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sonarqube",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sonarqube"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with SonarQube instances. Generally used to integrate Code Analysis into test runs\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to SonarQube (by limiting connections to a single test account)"
+		},
+		{
+			"name": "SQL Server",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query SQL Server using a SQL (DML) statement. Need to fill in sql_statement and sql_connection and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query SQL Server usng a SQL (DML) statement",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "sql_connection",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sqlserver",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sqlserver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DDL statement against a SQL Server instance. Need to fill in sql_statement and sql_connection and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DDL statement against a SQL Server instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "sql_connection",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sqlserver/ddl",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sqlserver",
+								"ddl"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Create or Update statement against a SQL Server instance. Need to fill in sql_statement and sql_connection and passCode",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Create or Update statement against a SQL Server instance. Need to fill in sql_statement and sql_connection"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "sql_connection",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sqlserver",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sqlserver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute a DML Remove or Delete statement against a SQL Server instance. Need to fill in sql_statement and sql_connection and passCode",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Execute a DML Remove or Delete statement against a SQL Server instance",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer",
+								"type": "text"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}",
+								"type": "text"
+							},
+							{
+								"key": "sql_statement",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "sql_connection",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sqlserver",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sqlserver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve BLOB from SQL Server. Need to fill in sql_statement, sql_connection and fileName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Retrieve BLOB from SQL Server"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_SQLServer"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "sql_connection",
+								"value": ""
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sqlserver/blob",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sqlserver",
+								"blob"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query SQL Server instances\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to SQL Server (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Storage Account",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Blobs in a specific Storage Account folder. Need to fill in directory and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List all Blobs in a specific Storage Account folder",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							},
+							{
+								"key": "directory",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/container/blobs",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"container",
+								"blobs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Directories in a specific Storage Account folder. Need to fill in directory and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List all Blobs in a specific Storage Account folder",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							},
+							{
+								"key": "directory",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "passCode",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/container/directories",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"container",
+								"directories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Blob to Storage Account. Need to fill in customFileName and landingFolderName and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Upload Blob to Storage Account",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							},
+							{
+								"key": "customFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "landingFolderName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/datafile/upload",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"datafile",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload all Blobs (within folder) to Storage Account. Need to fill in folderName and landingFolderName and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Upload all Blobs (within folder) to Storage Account",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							},
+							{
+								"key": "folderName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "landingFolderName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/datafolder/upload",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"datafolder",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check for Blob existence in Storage Account. Need to fill in customFileName and landingFolderName and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check for Blob existence in Storage Account",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount",
+								"type": "text"
+							},
+							{
+								"key": "customFileName",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "landingFolderName",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/datafile",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"datafile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download Blob from Storage Account. Need to fill in fileName, filePath, remoteFilePath and passCode. Depends on properties storageAccountName and containerName",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Download Blob from Storage Account"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_StorageAccount"
+							},
+							{
+								"key": "fileName",
+								"value": "Cosmosdb.7z"
+							},
+							{
+								"key": "filePath",
+								"value": "."
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							},
+							{
+								"key": "remoteFilePath",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/storageaccount/datafile/download",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"storageaccount",
+								"datafile",
+								"download"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to upload and download files from Azure Storage Account\n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Storage Account (by limiting connections to a single test account)"
+		},
+		{
+			"name": "String",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Echo text 'hello' back from Server",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Echo text 'hello' back from Server"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/echo/hello",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"echo",
+								"hello"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Echo text 'hello' back from Server using JSON Response",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Check for echoed String\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.echoMe).to.eq(\"hello\")",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Echo text 'hello' back from Server using JSON Response"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/echo2/hello",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"echo2",
+								"hello"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check whether a string is an integer. Need to fill in stringVal and positiveValidation (YES/NO)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Check whether a string is an integer",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String",
+								"type": "text"
+							},
+							{
+								"key": "stringVal",
+								"value": "10",
+								"type": "text"
+							},
+							{
+								"key": "positiveValidation",
+								"value": "Yes",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/string/isnumber",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"string",
+								"isnumber"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Compare 2 strings. Need to fill in string1 and string2",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Compare 2 strings",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String",
+								"type": "text"
+							},
+							{
+								"key": "string1",
+								"value": "this",
+								"type": "text"
+							},
+							{
+								"key": "string2",
+								"value": "not",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/string/compare",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"string",
+								"compare"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Look for string match within a comma-separated string (including close match). Need to fill in stringArray (comma-separated list) and stringToMatch",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Look for string match within a comma-separated string (including close match)"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String"
+							},
+							{
+								"key": "stringArray",
+								"value": "one,two,three"
+							},
+							{
+								"key": "stringToMatch",
+								"value": "one"
+							},
+							{
+								"key": "similarMatch",
+								"value": "yes"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/string/array/match",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"string",
+								"array",
+								"match"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return a string array from JSON elements. Need to fill in elementName, fileName and filePath",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Return a string array from JSON elements"
+							},
+							{
+								"key": "projectName",
+								"value": "test1"
+							},
+							{
+								"key": "elementName",
+								"value": ""
+							},
+							{
+								"key": "fileName",
+								"value": ""
+							},
+							{
+								"key": "filePath",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/json/to/array",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"json",
+								"to",
+								"array"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Encrypt String",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Encrypt string",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_String",
+								"type": "text"
+							},
+							{
+								"key": "clearTextString",
+								"value": "SAccount ghhjsdkkaa User",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/string/encrypt",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"string",
+								"encrypt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hash String",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Encrypt string",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "llama_demo",
+								"type": "text"
+							},
+							{
+								"key": "clearTextString",
+								"value": "SAccount ghhjsdkkaa User",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/string/hash",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"string",
+								"hash"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to interact with text strings\n    \n- This includes\n    \n    - Checking whether a string is an integer\n        \n    - Comparing 2 strings"
+		},
+		{
+			"name": "Synapse",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Synapse",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Data Lake, Delta Lake and Data Lakehouse using a SQL (DML) statement. Need to fill in SQL_Statement, serverName and databaseName and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Query Data Lake, Delta Lake and Data Lakehouse using a SQL (DML) statement"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Synapse"
+							},
+							{
+								"key": "sql_statement",
+								"value": ""
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "serverName",
+								"value": ""
+							},
+							{
+								"key": "databaseName",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/synapse",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"synapse"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to query Data Lake, Delta Lake and Data Lakehouse instances\n    \n- This can be a good way to hide Credentials from Postman (and other test tools) and manage connections to Data Lake, Delta Lake and Data Lakehouse (by limiting connections to a single test account)"
+		},
+		{
+			"name": "Wait",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sleep for some number of seconds. Need to fill in sleepFor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Sleep for some number of seconds",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							},
+							{
+								"key": "sleepFor",
+								"value": "30",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/sleep",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"sleep"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait until some event occurs before executing new process. Need to fill in expectedString, initialProcess, finalprocess, initialArguments, finalArguments and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait until some event occurs before executing new process",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							},
+							{
+								"key": "expectedString",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "initialProcess",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "finalProcess",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "initialArguments",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "finalArguments",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/waitfor/invoke",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"waitfor",
+								"invoke"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait until process completes (Response contains some string). Need to fill in expectedString, process and arguments and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait until process completes",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							},
+							{
+								"key": "expectedString",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "process",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "arguments",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/waitforstatus",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"waitforstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait until process completes (Response does not contain some string). Need to fill in expectedString, process, arguments and passCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait until process completes (Response does not contain some string)",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							},
+							{
+								"key": "expectedString",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "process",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "arguments",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/waitfordifferentstatus",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"waitfordifferentstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait until a process completes (for some period of time). Output written to ./data_files/temp/--projectName--/wait_until_synchronous.txt. Need to fill in command and matchString and passCode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait until a process completes (for some period of time). Output written to ./data_files/temp/--projectName--/wait_until_synchronous.txt"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}"
+							},
+							{
+								"key": "command",
+								"value": ""
+							},
+							{
+								"key": "matchString",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/wait/until/state/synchronous",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"wait",
+								"until",
+								"state",
+								"synchronous"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait until a process completes in a separate thread (for some period of time) - once it completes launch a secondary process. Output written to ./data_files/temp/--projectName--/wait_until_asynchronous.txt. Need to fill in initialCommand, finalSuccessfulC",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wait until a process completes in a separate thread (for some period of time) - once it completes launch a secondary process. Output written to ./data_files/temp/--projectName--/wait_until_asynchronous.txt"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait"
+							},
+							{
+								"key": "initialCommand",
+								"value": ""
+							},
+							{
+								"key": "finalSuccessfulCommand",
+								"value": ""
+							},
+							{
+								"key": "finalFailedCommand",
+								"value": ""
+							},
+							{
+								"key": "matchString",
+								"value": ""
+							},
+							{
+								"key": "passCode",
+								"value": ""
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/wait/until/state/asynchronous",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"wait",
+								"until",
+								"state",
+								"asynchronous"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "- API calls to introduce Wait/Until functionality into test cases\n    \n- This includes\n    \n    - sleep\n        \n    - logical wait/untils (wait until a result is matched before continuing)"
+		},
+		{
+			"name": "JMeter",
+			"item": [
+				{
+					"name": "Wake Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: Wake Bridge",
+								"type": "text"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_Wait",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/server/start",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"server",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List remote servers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List remote servers"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_JMeter"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jmeter/servers",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jmeter",
+								"servers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve JMeter version",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}: List remote servers"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_JMeter"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jmeter/version",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jmeter",
+								"version"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Run JMeter test. Need to fill in scriptName and resultFile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "stepName",
+								"value": "{{testcaseName}}:Run JMeter test"
+							},
+							{
+								"key": "projectName",
+								"value": "{{projectName}}_JMeter"
+							},
+							{
+								"key": "testcaseName",
+								"value": "{{testcaseName}}"
+							},
+							{
+								"key": "scriptName",
+								"value": ""
+							},
+							{
+								"key": "resultFile",
+								"value": ""
+							},
+							{
+								"key": "",
+								"value": ""
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/jmeter",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"jmeter"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api_url",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "testcaseName",
+			"value": "RestProvider_UnitTests",
+			"type": "string"
+		},
+		{
+			"key": "projectName",
+			"value": "RestProviderUnitTests",
+			"type": "string"
+		}
+	]
+}

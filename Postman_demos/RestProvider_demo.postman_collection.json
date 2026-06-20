@@ -1,0 +1,661 @@
+{
+	"info": {
+		"_postman_id": "16fe7810-cdb8-47b2-93c7-efa847aa3421",
+		"name": "RestProvider Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23915416",
+		"_collection_link": "https://martian-water-644952.postman.co/workspace/New-Team-Workspace~4d5f155e-0395-42ed-ac64-2007966c9927/collection/23915416-16fe7810-cdb8-47b2-93c7-efa847aa3421?action=share&source=collection_link&creator=23915416"
+	},
+	"item": [
+		{
+			"name": "Wake Bridge",
+			"event": [
+				{
+					"mablVariables": [],
+					"mablAssertions": [
+						{
+							"assertType": "Equals",
+							"assertTarget": "Status",
+							"id": "72b239c1-3494-4204-b92d-922158fd0924",
+							"value": "200"
+						}
+					],
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status equals 200\", function () { pm.response.to.have.status(parseInt(\"200\")); });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"value": "{{testcaseName}}: Seed variables from variable.properties",
+						"key": "stepName",
+						"uuid": "8bff72d0-35f7-40e0-bc59-11d7f0103ede"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "bb8e485e-2ce2-4eaa-99ee-b2b1d9acc67e"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/server/start",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"server",
+						"start"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check AZ Pipeline can return details",
+			"event": [
+				{
+					"mablVariables": [],
+					"mablAssertions": [
+						{
+							"assertType": "Equals",
+							"assertTarget": "Status",
+							"id": "2c36323a-a573-402b-a58d-aebf6bdb0067",
+							"value": "200"
+						}
+					],
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status equals 200\", function () { pm.response.to.have.status(parseInt(\"200\")); });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"value": "YOUR_ORGANIZATION",
+						"key": "organization",
+						"uuid": "5873e219-3e20-461c-8f71-ea68863f69a2"
+					},
+					{
+						"value": "Product_Healthcare",
+						"key": "project",
+						"uuid": "d5b57d3e-7a11-491f-8c6f-68041c4bc65d"
+					},
+					{
+						"value": "10",
+						"key": "top",
+						"uuid": "6488a6ac-533f-41c8-b0e0-300acc6da30a"
+					},
+					{
+						"value": "FinishTimeAsc",
+						"key": "queryOrder",
+						"uuid": "0bfde7ac-2e67-4549-8da5-32ae0a0505c1"
+					},
+					{
+						"value": "all",
+						"key": "reason",
+						"uuid": "289a0760-81f7-40bf-9087-57b40815f02e"
+					},
+					{
+						"value": "succeeded",
+						"key": "result",
+						"uuid": "b35cf472-7ef2-4d81-abf4-f41478b861a4"
+					},
+					{
+						"value": "completed",
+						"key": "status",
+						"uuid": "d8a61852-4c43-4f10-939e-e6060879710d"
+					},
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Check AZ Pipeline run can return details",
+						"type": "text",
+						"uuid": "ae88e2dc-db3c-4cbf-910c-34c92aa78039"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "d3617614-ae7e-4804-a6c5-9c1c0972add8"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/az/pipeline/runs",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"az",
+						"pipeline",
+						"runs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "query CosmosDB (dependent on CosmosConnectString)",
+			"event": [
+				{
+					"mablVariables": [],
+					"mablAssertions": [
+						{
+							"assertType": "Equals",
+							"assertTarget": "JSONBody",
+							"description": "",
+							"id": "bb765de1-fad6-40e0-ae7e-89e023f9d28a",
+							"bodyPath": "data.rows",
+							"value": "CosmosDB read has completed"
+						},
+						{
+							"assertType": "Equals",
+							"assertTarget": "Status",
+							"id": "906ebe3e-48d2-4b58-a56e-c325eca36d62",
+							"value": "200"
+						}
+					],
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status equals 200\", function () { pm.response.to.have.status(parseInt(\"200\")); });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"value": "JamesTestContainer",
+						"key": "cosmosContainerId",
+						"uuid": "4f214496-6eba-439e-917c-6e029e769ae8"
+					},
+					{
+						"value": "JamesTestDB",
+						"key": "cosmosDatabaseId",
+						"uuid": "7b96178d-80aa-4cb5-bdfc-d5f19b07e7ec"
+					},
+					{
+						"value": "select * from JamesTestDB",
+						"key": "sql_statement",
+						"uuid": "92fb7fb7-97f7-4f8d-a1d2-6aca163497aa"
+					},
+					{
+						"value": "{{testcaseName}}: Retrieve CosmosDB query single record",
+						"key": "stepName",
+						"uuid": "becee084-1bb4-4d9c-b6cb-24e0bbc77a9a"
+					},
+					{
+						"value": "{{testcaseName}}_singlerecord",
+						"key": "testcaseName",
+						"uuid": "b3750784-dda1-4504-8f95-9c0e3726084a"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "59575f15-6acd-4b8a-992d-f5fb4e1bef33"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/cosmosdb",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"cosmosdb"
+					]
+				},
+				"description": "Reference: Azure Cosmos DB NoSQL quickstart documentation."
+			},
+			"response": []
+		},
+		{
+			"name": "retrieve CosmosDB results",
+			"event": [
+				{
+					"mablVariables": [],
+					"mablAssertions": [
+						{
+							"assertType": "Equals",
+							"assertTarget": "Status",
+							"id": "07c65b26-19ea-4033-8caf-4f2cd3fdf9f7",
+							"value": "200"
+						}
+					],
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status equals 200\", function () { pm.response.to.have.status(parseInt(\"200\")); });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"value": "RestProvider_Demo_singlerecord_cosmos_query_result.txt",
+						"key": "fileName",
+						"uuid": "afe0f9b5-25fe-4a9b-89f6-c8322a3c9ce4"
+					},
+					{
+						"value": ".",
+						"key": "filePath",
+						"uuid": "cfa1e03b-5492-4b41-b0bd-170a40c911f5"
+					},
+					{
+						"value": "{{testcaseName}}: Read from SQL query",
+						"key": "stepName",
+						"uuid": "d59d356f-26a3-4885-a87e-653234333577"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "ec4371b5-5e93-493e-b522-ea1429417281"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/file/json",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"file",
+						"json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Compare CosmosDB result to valid expected result",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Compare CosmosDB result to valid expected result",
+						"type": "text",
+						"uuid": "a1c66edd-fc92-4201-9b43-a4b40ddf7515"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "0db153ef-62d0-4ebe-b776-f7b90d3e1e42"
+					},
+					{
+						"key": "testcaseName",
+						"value": "{{testcaseName}}",
+						"type": "text",
+						"uuid": "76811637-01c5-4d3a-bb2f-390d7ea775fd"
+					},
+					{
+						"key": "file1",
+						"value": "../../templates/RestProvider_Demo_singlerecord_cosmos_query_result_pass.txt",
+						"type": "text",
+						"uuid": "254f0638-6840-4643-bfea-d05142e7264a"
+					},
+					{
+						"key": "file2",
+						"value": "RestProvider_Demo_singlerecord_cosmos_query_result.txt",
+						"type": "text",
+						"uuid": "06193d46-78b9-45f7-b58f-043c3958865f"
+					},
+					{
+						"key": "useShortDiff",
+						"value": "true",
+						"type": "text",
+						"uuid": "f9d9fbe4-3f1e-4782-b5cf-94e49bbec5a0"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/file/diff",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"file",
+						"diff"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Compare CosmosDB result to invalid expected result Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 406\", function () {",
+							"  pm.response.to.have.status(406);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Compare CosmosDB result to expected result",
+						"type": "text",
+						"uuid": "c2b963a0-2969-4f40-87f1-7de472bd1052"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "86f38d37-fa32-4890-af7f-8a6952335687"
+					},
+					{
+						"key": "testcaseName",
+						"value": "{{testcaseName}}",
+						"type": "text",
+						"uuid": "1215a2ec-7e37-4339-a941-57d575c774cd"
+					},
+					{
+						"key": "file1",
+						"value": "../../templates/RestProvider_Demo_singlerecord_cosmos_query_result_fail.txt",
+						"type": "text",
+						"uuid": "c783d056-8c4f-49cd-a806-71d946eb312d"
+					},
+					{
+						"key": "file2",
+						"value": "RestProvider_Demo_singlerecord_cosmos_query_result.txt",
+						"type": "text",
+						"uuid": "4bd4a969-9968-42ee-8f48-f89ec7d42563"
+					},
+					{
+						"key": "useShortDiff",
+						"value": "true",
+						"type": "text",
+						"uuid": "cc423038-93b8-4748-a6a0-7730e0c1fcdb"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/file/diff",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"file",
+						"diff"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "env variable",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Get environment variable os_demo",
+						"type": "text",
+						"uuid": "950d7006-4d38-4546-88f1-0a220d46c96f"
+					},
+					{
+						"key": "varName",
+						"value": "os_demo",
+						"type": "text",
+						"uuid": "e6f2151d-f3e2-4464-8317-905f1603ef29"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/variable",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"variable"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read from Template Sample1.xlsx",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Read from Template Sample1.xlsx",
+						"type": "text",
+						"uuid": "469d421a-f01b-4182-b962-24276243edf5"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "6d35249b-d78b-49ce-97f8-40ae7314bc13"
+					},
+					{
+						"key": "relativeInputFilePath",
+						"value": "../../templates/Sample1.xlsx",
+						"type": "text",
+						"uuid": "dc85907d-56d8-4070-ba91-6d365f6e072f"
+					},
+					{
+						"key": "outputFile",
+						"value": "Sample1.csv",
+						"type": "text",
+						"uuid": "84132994-fbae-4af2-9891-f2b8766034bb"
+					},
+					{
+						"key": "worksheetName",
+						"value": "Contacts",
+						"type": "text",
+						"uuid": "641f6db4-4074-4b36-a30a-e737756aace1"
+					},
+					{
+						"key": "deleteIfExists",
+						"value": "Yes",
+						"type": "text",
+						"uuid": "447f558b-85b2-462b-a84b-42e958726188"
+					},
+					{
+						"key": "testcaseName",
+						"value": "{{testcaseName}}",
+						"type": "text",
+						"uuid": "eac08678-ea88-48dd-bcb0-ec4e75aa1493"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/office/excel/all",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"office",
+						"excel",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read contents of Sample1.csv",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "stepName",
+						"value": "{{testcaseName}}: Read contents of Sample1.csv",
+						"type": "text",
+						"uuid": "3c6f33b7-eb10-4ccd-9d1f-a664ead094bc"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "6313150a-5eeb-4ebf-82a4-c2f44204f0e0"
+					},
+					{
+						"key": "filePath",
+						"value": ".",
+						"type": "text",
+						"uuid": "e8071478-b37f-4bc6-8cad-011b5c203e6c"
+					},
+					{
+						"key": "fileName",
+						"value": "Sample1.csv",
+						"type": "text",
+						"uuid": "0d06e1da-d89f-4a92-bb07-0b4787df31fc"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/file",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Shutdown Bridge",
+			"event": [
+				{
+					"mablVariables": [],
+					"mablAssertions": [
+						{
+							"assertType": "Equals",
+							"assertTarget": "Status",
+							"id": "72b239c1-3494-4204-b92d-922158fd0924",
+							"value": "200"
+						}
+					],
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status equals 200\", function () { pm.response.to.have.status(parseInt(\"200\")); });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"value": "{{testcaseName}}: Seed variables from variable.properties",
+						"key": "stepName",
+						"uuid": "98a97084-cca8-4e80-89b0-e3a7cccdd120"
+					},
+					{
+						"key": "projectName",
+						"value": "{{projectName}}",
+						"type": "text",
+						"uuid": "4f257419-6379-44ac-a9de-49af46bf93af"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/server/stop",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"server",
+						"stop"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{fhir_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api.url",
+			"value": "http://link-host:5158",
+			"disabled": true
+		},
+		{
+			"key": "api_url",
+			"value": "http://localhost:8080/api"
+		},
+		{
+			"key": "testcaseName",
+			"value": "RestProvider_Demo"
+		},
+		{
+			"key": "projectName",
+			"value": "RestProvider",
+			"type": "string"
+		}
+	]
+}
