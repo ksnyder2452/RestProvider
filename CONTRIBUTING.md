@@ -1,111 +1,131 @@
 # Contributing to RestProvider
 
-Thank you for your interest in contributing to RestProvider! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to RestProvider! This document explains how to set up the project, follow coding standards, and submit high-quality pull requests.
 
 ## Code of Conduct
 
-Please be respectful and constructive in all interactions with other contributors and maintainers.
+Please be respectful, collaborative, and constructive in all project interactions.
 
 ## Getting Started
 
-1. **Fork the repository** on GitHub
+1. **Fork the repository** on GitHub.
 2. **Clone your fork** locally:
    ```bash
    git clone https://github.com/YOUR_USERNAME/RestProvider.git
    cd RestProvider
    ```
-3. **Create a new branch** for your changes:
+3. **Create a feature branch**:
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
-## Development Setup
+## Development Environment
 
-RestProvider is primarily a Java project. Ensure you have the following installed:
+RestProvider is primarily a **Java** project and uses **Maven** for builds.
 
-- Java Development Kit (JDK) 11 or higher
-- Maven or Gradle (as per the project's build configuration)
+### Requirements
+
+- JDK 11 or newer
+- Maven 3.8+
 - Git
 
-### Building the Project
+Verify tools:
 
 ```bash
-# Build the project
-mvn clean install
-
-# Or with Gradle
-gradle build
+java -version
+mvn -version
+git --version
 ```
 
-## Making Changes
+## Build and Run (Maven)
 
-### Code Style
+Use Maven commands from the repository root:
 
-- Follow Java naming conventions and best practices
-- Maintain consistent indentation and formatting
-- Write clear, descriptive variable and method names
-- Add comments for complex logic
+```bash
+# Clean and compile
+mvn clean compile
 
-### Commit Messages
+# Run unit/integration tests
+mvn test
 
-- Use clear, concise commit messages
-- Start with a verb (Add, Fix, Update, Remove, etc.)
-- Reference relevant issues or PRs when applicable
-- Example: `Add support for OAuth2 authentication in REST provider`
+# Build distributable artifacts
+mvn clean package
 
-### Testing
+# Full verification lifecycle
+mvn clean verify
 
-- Write tests for new functionality
-- Ensure all existing tests pass before submitting
-- Run tests locally:
+# Install artifact to local Maven repository
+mvn clean install
+```
+
+## Code Style Guidelines
+
+- Follow standard Java naming conventions.
+- Keep methods focused and readable.
+- Prefer clear names over abbreviations.
+- Add comments only where intent is not obvious from code.
+- Keep changes scoped to the PR objective.
+
+## Testing Expectations
+
+Before opening a pull request:
+
+- Add or update tests for behavior changes.
+- Ensure all tests pass locally:
   ```bash
   mvn test
   ```
+- Run full verification for larger or riskier changes:
+  ```bash
+  mvn clean verify
+  ```
 
-## Submitting Changes
+## Commit Message Guidance
 
-1. **Push your branch** to your fork:
+Use clear, imperative commit messages:
+
+- `Add request timeout handling to orchestration endpoint`
+- `Fix null pointer in integration status mapper`
+- `Update API docs for utility workflow parameters`
+
+When relevant, reference issues in commit messages or PR descriptions (e.g., `Closes #123`).
+
+## Submitting a Pull Request
+
+1. Push your branch:
    ```bash
    git push origin feature/your-feature-name
    ```
+2. Open a pull request against `main`.
+3. Fill out the PR template completely.
+4. Ensure CI checks pass.
+5. Respond to review feedback promptly.
 
-2. **Create a Pull Request** on GitHub with:
-   - A clear, descriptive title
-   - A description of the changes and their purpose
-   - Reference to any related issues (use `Closes #123`)
-   - Screenshots or examples if applicable
+## Reporting Bugs / Requesting Features
 
-3. **Address feedback** from code reviews promptly
+Please open an issue and include:
 
-## Reporting Issues
+- Clear summary
+- Steps to reproduce (for bugs)
+- Expected vs actual behavior
+- Relevant logs or stack traces
+- Environment details (OS, JDK, Maven version)
 
-When reporting bugs or suggesting features:
+## Project Contribution Areas
 
-- **Check existing issues** first to avoid duplicates
-- **Provide clear descriptions** of the problem or feature
-- **Include steps to reproduce** for bugs
-- **Share relevant logs or error messages**
-- **Mention your environment** (OS, Java version, etc.)
+Common contribution areas include:
 
-## Project Structure
-
-RestProvider is a multi-integration automation API server for test orchestration and utility workflows, written primarily in Java (98.5%).
-
-Key areas for contribution:
-- API endpoints and integrations
-- Test orchestration logic
-- Utility workflows
-- Documentation
-- Bug fixes and performance improvements
-
-## Questions?
-
-Feel free to open an issue for questions or discussions about the project. We're here to help!
+- API endpoint enhancements
+- Integration reliability improvements
+- Test orchestration features
+- Utility workflow improvements
+- Documentation and examples
+- Bug fixes and performance tuning
 
 ## License
 
-By contributing to RestProvider, you agree that your contributions will be licensed under the same license as the project.
+By contributing, you agree your contributions are licensed under the project’s existing license.
 
 ---
 
-Thank you for contributing to RestProvider! 🎉
+Thanks for helping improve RestProvider! 🎉
