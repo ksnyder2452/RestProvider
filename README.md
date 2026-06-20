@@ -8,7 +8,6 @@ RestProvider is a multi-integration automation API server for test orchestration
 ## Repository Layout
 
 - Java server: [java-server](java-server)
-- Shell and container scripts: [ShellCommand](ShellCommand)
 - Data files and templates: [data_files](data_files)
 
 ## Repository Structure
@@ -35,12 +34,6 @@ RestProvider/
 │       └── test/
 │           └── java/com/restprovider/
 │               └── integration/        # Integration tests per controller
-├── ShellCommand/                       # Standalone shell and ADF scripts
-│   ├── AdfLogger.sh
-│   ├── setcrontab.sh
-│   ├── sortCSVColumns.sh
-│   ├── sortCSVColumnsExistingList.sh
-│   └── sortCSVRows.sh
 ├── data_files/                         # Sample properties and response templates
 │   ├── variable.properties
 │   ├── sample_var.properties
@@ -51,6 +44,8 @@ RestProvider/
 ├── LICENSE.md
 └── README.md
 ```
+
+CSV sorting, column projection, and Log Analytics querying are implemented directly in the Java server.
 
 ## Controller Coverage
 
