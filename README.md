@@ -61,6 +61,12 @@ Detailed controller notes are maintained in [java-server/MIGRATION_STATUS.md](ja
 
 ## Quick Start
 
+Deployment recommendation:
+
+1. Run RestProvider Server on an isolated host, such as a dedicated VM or Docker container.
+2. This is recommended because several controllers can interact with the local operating system, files, processes, and other environment-level resources.
+3. Avoid running the server directly on shared developer workstations or sensitive hosts unless access is tightly controlled.
+
 Prerequisites:
 
 1. Java 17+
