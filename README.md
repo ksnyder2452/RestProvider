@@ -8,6 +8,47 @@ RestProvider is a multi-integration automation API server for test orchestration
 - Shell and container scripts: [ShellCommand](ShellCommand)
 - Data files and templates: [data_files](data_files)
 
+## Repository Structure
+
+```
+RestProvider/
+├── java-server/                        # Java Spring Boot API server
+│   ├── pom.xml                         # Maven build descriptor
+│   ├── README.md                       # Server-specific documentation
+│   ├── MIGRATION_STATUS.md             # Controller implementation status
+│   ├── install/
+│   │   ├── install.ps1                 # Windows install script
+│   │   └── install.sh                  # Linux/macOS install script
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/restprovider/
+│       │   │   ├── App.java            # Application entry point
+│       │   │   ├── controllers/        # One class per integration controller
+│       │   │   ├── core/               # Server bootstrap, registry, dispatcher
+│       │   │   ├── domain/             # DTOs and service layer (azure, business, common, security)
+│       │   │   └── util/               # Shared utilities (JsonUtil)
+│       │   └── resources/
+│       │       └── log4j2.xml          # Logging configuration
+│       └── test/
+│           └── java/com/restprovider/
+│               └── integration/        # Integration tests per controller
+├── ShellCommand/                       # Standalone shell and ADF scripts
+│   ├── AdfLogger.sh
+│   ├── setcrontab.sh
+│   ├── sortCSVColumns.sh
+│   ├── sortCSVColumnsExistingList.sh
+│   └── sortCSVRows.sh
+├── data_files/                         # Sample properties and response templates
+│   ├── variable.properties
+│   ├── sample_var.properties
+│   └── templates/                      # Example request/response payloads
+├── scripts/
+│   └── sync-controller-status.ps1      # Utility to sync controller status docs
+├── CONTRIBUTING.md
+├── LICENSE
+└── README.md
+```
+
 ## Controller Coverage
 
 All controllers currently shipped in the Java server are implemented natively.
