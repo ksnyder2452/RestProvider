@@ -18,6 +18,12 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the AZPipeline integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class AZPipelineController extends BaseController {
     private static final Pattern RESULT_PATTERN = Pattern.compile("\\\"result\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
     private static final Pattern STATUS_PATTERN = Pattern.compile("\\\"status\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
@@ -25,16 +31,31 @@ public class AZPipelineController extends BaseController {
     private final PasscodeValidator passcodeValidator;
     private final CommandRunner commandRunner;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public AZPipelineController() {
         this(new EnvPasscodeValidator(), ProcessUtil::run);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public AZPipelineController(PasscodeValidator passcodeValidator, CommandRunner commandRunner) {
         super("AZPipeline");
         this.passcodeValidator = passcodeValidator;
         this.commandRunner = commandRunner;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -287,9 +308,14 @@ public class AZPipelineController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface CommandRunner {
         String run(String command, String args);
     }
 }
+
+
 

@@ -22,15 +22,27 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the Databricks integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class DatabricksController extends BaseController {
     private final PasscodeValidator passcodeValidator;
     private final CommandRunner commandRunner;
     private final HttpInvoker httpInvoker;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public DatabricksController() {
         this(new EnvPasscodeValidator(), ProcessUtil::run, DatabricksController::invokeHttp);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public DatabricksController(PasscodeValidator passcodeValidator,
                                 CommandRunner commandRunner,
                                 HttpInvoker httpInvoker) {
@@ -40,6 +52,15 @@ public class DatabricksController extends BaseController {
         this.httpInvoker = httpInvoker;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -84,6 +105,7 @@ public class DatabricksController extends BaseController {
                     + "\"statement\":\"" + JsonUtil.escape(sql) + "\""
                     + "}";
             String endpoint = "https://" + host + "/api/2.0/sql/statements/";
+            // Outbound REST call to the target service endpoint.
             String result = httpInvoker.call("POST", endpoint, token, payload);
             Files.writeString(outputPath, result, StandardCharsets.UTF_8);
 
@@ -128,6 +150,7 @@ public class DatabricksController extends BaseController {
                 return;
             }
             String endpoint = "https://" + host + "/api/2.0/sql/warehouses/" + warehouse + "/start";
+            // Outbound REST call to the target service endpoint.
             String result = httpInvoker.call("POST", endpoint, token, "");
             respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
             return;
@@ -251,6 +274,7 @@ public class DatabricksController extends BaseController {
             } else {
                 req = builder.method(method, HttpRequest.BodyPublishers.ofString(body)).build();
             }
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -263,14 +287,22 @@ public class DatabricksController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface CommandRunner {
         String run(String command, String args);
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface HttpInvoker {
         String call(String method, String endpoint, String bearerToken, String body);
     }
 }
+
+
 

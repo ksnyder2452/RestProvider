@@ -15,14 +15,26 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the Business integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class BusinessController implements BridgeController {
     private static final Logger logger = LogManager.getLogger(BusinessController.class);
     private final BusinessService businessService;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public BusinessController() {
         this(new DefaultBusinessService());
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public BusinessController(BusinessService businessService) {
         this.businessService = businessService;
     }
@@ -32,6 +44,15 @@ public class BusinessController implements BridgeController {
         return "Business";
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -75,3 +96,5 @@ public class BusinessController implements BridgeController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 }
+
+

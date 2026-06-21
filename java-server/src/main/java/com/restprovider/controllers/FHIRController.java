@@ -19,16 +19,28 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the FHIR integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class FHIRController extends BaseController {
     private final PasscodeValidator passcodeValidator;
     private final CommandRunner commandRunner;
     private final HttpInvoker httpInvoker;
     private String cachedPat;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public FHIRController() {
         this(new EnvPasscodeValidator(), ProcessUtil::run, FHIRController::invokeHttp);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public FHIRController(PasscodeValidator passcodeValidator, CommandRunner commandRunner, HttpInvoker httpInvoker) {
         super("FHIR");
         this.passcodeValidator = passcodeValidator;
@@ -37,6 +49,15 @@ public class FHIRController extends BaseController {
         this.cachedPat = "";
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -199,6 +220,7 @@ public class FHIRController extends BaseController {
             } else {
                 req = builder.method(method, HttpRequest.BodyPublishers.ofString(payload)).build();
             }
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -211,14 +233,22 @@ public class FHIRController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface CommandRunner {
         String run(String command, String args);
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface HttpInvoker {
         String invoke(String method, String endpoint, String bearerToken, String payload, String contentType);
     }
 }
+
+
 

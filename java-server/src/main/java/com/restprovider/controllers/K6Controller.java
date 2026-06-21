@@ -1,15 +1,12 @@
 package com.restprovider.controllers;
 
+import com.restprovider.core.BaseController;
 import com.restprovider.core.HttpRequestUtil;
 import com.restprovider.core.ProcessUtil;
-import com.restprovider.domain.security.EnvPasscodeValidator;
-import com.restprovider.domain.security.PasscodeValidator;
 import com.restprovider.util.JsonUtil;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -18,28 +15,26 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 /**
- * Controller for the MSD integration endpoints.
+ * Controller for the K6 integration endpoints.
  *
  * <p>This class maps controller routes, validates request input aliases, and
  * returns API responses aligned with RestProvider automation behavior.</p>
  */
-public class MSDController extends BaseController {
-    private final PasscodeValidator passcodeValidator;
+public class K6Controller extends BaseController {
     private final CommandRunner commandRunner;
 
     /**
      * Creates a controller with default runtime dependencies.
      */
-    public MSDController() {
-        this(new EnvPasscodeValidator(), ProcessUtil::run);
+    public K6Controller() {
+        this(ProcessUtil::run);
     }
 
     /**
      * Creates a controller with injected dependencies for testability and customization.
      */
-    public MSDController(PasscodeValidator passcodeValidator, CommandRunner commandRunner) {
-        super("MSD");
-        this.passcodeValidator = passcodeValidator;
+    public K6Controller(CommandRunner commandRunner) {
+        super("K6");
         this.commandRunner = commandRunner;
     }
 
@@ -59,70 +54,52 @@ public class MSDController extends BaseController {
         String route = normalizeRoute(subPath);
         String method = request.getMethod();
         Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
-        if (("GET".equalsIgnoreCase(method) || "POST".equalsIgnoreCase(method))
-                && ("".equals(route) || "query".equalsIgnoreCase(route))) {
-            if (!validatePassCode(request, response, query)) {
+
+        if ("GET".equalsIgnoreCase(method)
+                && ("version".equalsIgnoreCase(route) || "info/version".equalsIgnoreCase(route))) {
+            String output = commandRunner.run("k6", "version");
+            respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(output) + "\"}");
+            return;
+        }
+
+        if (("POST".equalsIgnoreCase(method) || "GET".equalsIgnoreCase(method))
+                && ("".equals(route) || "run".equalsIgnoreCase(route))) {
+            String projectName = defaultValue(readValue(request, query, "projectName", "project"), "k6");
+            String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "run"));
+            String scriptName = readValue(request, query, "scriptName", "script", "testScript");
+            String resultFile = defaultValue(readValue(request, query, "resultFile", "summaryFile", "result"), "summary.json");
+
+            if (!require(response, "scriptName", scriptName)) {
                 return;
             }
 
-            String projectName = defaultValue(readValue(request, query, "projectName", "project"), "msd");
-            String testcaseName = safeName(defaultValue(readValue(request, query, "testcaseName", "testcase", "testCase"), "query"));
-            String server = defaultValue(readValue(request, query, "serverHostName", "server", "host"), env("serverHostName"));
-            String user = defaultValue(readValue(request, query, "account", "user", "username"), env("azure_account"));
-            String pwd = defaultValue(readValue(request, query, "password", "pwd"), env("azure_pwd"));
-            String sql = readValue(request, query, "sql_statement", "sql", "query");
+            String rootDir = System.getProperty("user.dir");
+            Path scriptPath = Path.of(rootDir, "data_files", scriptName);
+            Path tempFolder = Path.of(rootDir, "data_files", "temp", projectName);
+            String resolvedResultFile = tempFolder.resolve(testcaseName + "_" + safeName(resultFile)).toString();
 
-            if (!require(response, "sql_statement", sql)
-                    || !require(response, "serverHostName", server)
-                    || !require(response, "account", user)
-                    || !require(response, "password", pwd)) {
-                return;
-            }
-
-            Path tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", projectName);
-            Files.createDirectories(tempFolder);
-            String defaultName = testcaseName + "_msd_query_result.txt";
-            String outputFile = defaultValue(readValue(request, query, "outputFile"), defaultName);
-            Path outputPath = tempFolder.resolve(outputFile);
-
-            String args = "-S" + server + " -G -U " + user + " -P " + pwd
-                    + " -Q " + quote(sql) + " -o " + quote(outputPath.toString());
-            String result = commandRunner.run("sqlcmd", args);
-            respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
+            String args = "run " + scriptPath + " --summary-export " + resolvedResultFile;
+            String output = commandRunner.run("k6", args);
+            respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(output) + "\"}");
             return;
         }
 
         super.handle(request, response, subPath);
     }
 
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
-        String passCode = readValue(request, query, "passCode", "passcode");
-        if (!passcodeValidator.isValid(passCode)) {
-            logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
-            respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
-            return false;
-        }
-        return true;
-    }
-
     private static String normalizeRoute(String subPath) {
         String route = subPath == null ? "" : subPath;
-        if (route.startsWith("msd/")) {
-            route = route.substring("msd/".length());
+        if (route.startsWith("k6/")) {
+            route = route.substring("k6/".length());
         }
-        if ("msd".equalsIgnoreCase(route)) {
+        if ("k6".equalsIgnoreCase(route)) {
             return "";
         }
         return route;
     }
 
-    private static String safeName(String value) {
-        return value == null ? "" : value.replace(" ", "_");
-    }
-
-    private static String env(String name) {
-        String value = System.getenv(name);
-        return value == null ? "" : value;
+    private static String safeName(String name) {
+        return (name == null ? "" : name).replace(" ", "_");
     }
 
     private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
@@ -158,10 +135,6 @@ public class MSDController extends BaseController {
         return false;
     }
 
-    private static String quote(String value) {
-        return "\"" + (value == null ? "" : value.replace("\"", "\\\"")) + "\"";
-    }
-
     private static void respondJson(ClassicHttpResponse response, int code, String body) {
         response.setCode(code);
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
@@ -175,6 +148,5 @@ public class MSDController extends BaseController {
         String run(String command, String args);
     }
 }
-
 
 

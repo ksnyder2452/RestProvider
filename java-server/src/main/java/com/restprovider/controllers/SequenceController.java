@@ -26,11 +26,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
+/**
+ * Controller for the Sequence integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class SequenceController extends BaseController {
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public SequenceController() {
         super("Sequence");
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -234,3 +252,5 @@ public class SequenceController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
     }
 }
+
+

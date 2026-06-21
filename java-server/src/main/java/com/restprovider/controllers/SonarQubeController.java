@@ -18,20 +18,41 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the SonarQube integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class SonarQubeController extends BaseController {
     private final PasscodeValidator passcodeValidator;
     private final HttpExecutor httpExecutor;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public SonarQubeController() {
         this(new EnvPasscodeValidator(), SonarQubeController::executeGraphQL);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public SonarQubeController(PasscodeValidator passcodeValidator, HttpExecutor httpExecutor) {
         super("SonarQube");
         this.passcodeValidator = passcodeValidator;
         this.httpExecutor = httpExecutor;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -152,6 +173,7 @@ public class SonarQubeController extends BaseController {
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -164,9 +186,14 @@ public class SonarQubeController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface HttpExecutor {
         String postGraphQL(String endpoint, String apiToken, String query);
     }
 }
+
+
 

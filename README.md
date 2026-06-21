@@ -26,6 +26,7 @@ RestProvider/
 │       │   ├── java/com/restprovider/
 │       │   │   ├── App.java            # Application entry point
 │       │   │   ├── controllers/        # One class per integration controller
+│       │   │   │   └── JavadocController.java  # Generates and serves Javadocs
 │       │   │   ├── core/               # Server bootstrap, registry, dispatcher
 │       │   │   ├── domain/             # DTOs and service layer (azure, business, common, security)
 │       │   │   └── util/               # Shared utilities (JsonUtil)
@@ -34,6 +35,7 @@ RestProvider/
 │       └── test/
 │           └── java/com/restprovider/
 │               └── integration/        # Integration tests per controller
+│                   └── JavadocControllerIntegrationTest.java
 ├── data_files/                         # Sample properties and response templates
 │   ├── variable.properties
 │   ├── sample_var.properties
@@ -72,6 +74,7 @@ All controllers currently shipped in the Java server are implemented natively.
 | BrowserStack | Complete |
 | Jenkins | Complete |
 | JMeter | Complete |
+| K6 | Complete |
 | Postman | Complete |
 | SonarQube | Complete |
 
@@ -82,6 +85,7 @@ All controllers currently shipped in the Java server are implemented natively.
 | MSD | Complete |
 | Oracle | Complete |
 | PowerBI | Complete |
+| Grafana | Complete |
 | Snowflake | Complete |
 | SQLServer | Complete |
 
@@ -95,6 +99,7 @@ All controllers currently shipped in the Java server are implemented natively.
 | Misc | Complete |
 | Office | Complete |
 | OS | Complete |
+| Javadoc | Complete |
 | Sequence | Complete |
 | String | Complete |
 | Wait | Complete |
@@ -183,6 +188,7 @@ Representative routes:
 4. System and utility:
    - `GET /api/business/health`
    - `GET /api/file/exists`, `POST /api/file/upload/local`
+   - `GET /api/javadoc/generate`, `GET /api/javadoc/docs`
    - `GET /api/loganalytics/message`, `GET /api/loganalytics/message/startswith`
    - `GET /api/misc/check/vpn`, `GET /api/misc/account/names`
    - `POST /api/os/session/schedule`, `GET /api/os/env/variable`
@@ -191,6 +197,18 @@ Representative routes:
    - `GET /api/wait/sleep/{seconds}`, `POST /api/wait/wait/until/state/synchronous`
 
 Route details and controller-specific aliases are documented in [java-server/README.md](java-server/README.md).
+
+## Generated API Docs
+
+Generated Javadocs are published by the Java server at:
+
+- `GET /api/javadoc/docs` (or `http://localhost:8080/api/javadoc/docs` when running locally)
+
+Important:
+
+1. The `Javadoc` controller is disabled by default at startup.
+2. Enable it before using documentation routes:
+   - `PUT /admin/controllers/javadoc/enabled?value=true`
 
 ## Enable or Disable Controllers
 

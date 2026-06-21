@@ -22,18 +22,39 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the SQLServer integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class SQLServerController extends BaseController {
     private final PasscodeValidator passcodeValidator;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public SQLServerController() {
         this(new EnvPasscodeValidator());
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public SQLServerController(PasscodeValidator passcodeValidator) {
         super("SQLServer");
         this.passcodeValidator = passcodeValidator;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -240,4 +261,6 @@ public class SQLServerController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 }
+
+
 
