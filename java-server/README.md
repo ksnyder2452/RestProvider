@@ -4,7 +4,7 @@ Java implementation of RestProvider controllers using Apache HttpComponents (Htt
 
 ## What this contains
 
-- 31 Java controllers mirroring the existing controller names.
+- 32 Java controllers mirroring the existing controller names.
 - Apache HTTP server bootstrap using `ServerBootstrap`.
 - Native controller implementations for every route-bearing domain.
 - DTO and service layer split for cleaner domain boundaries.
@@ -83,6 +83,14 @@ Java implementation of RestProvider controllers using Apache HttpComponents (Htt
   - `GET /api/jmeter/servers` (alias: `/api/jmeter/server/list`)
   - `GET|POST /api/jmeter` (alias: `/api/jmeter/run`)
   - Script execution accepts aliases for script and output settings (`scriptName`, `resultFile`, `jmeterLogFile`)
+- Javadoc routes:
+  - `GET /api/javadoc/generate` (aliases: `/api/javadoc`, `/api/javadoc/build`) to generate project Javadocs via Maven
+  - `GET /api/javadoc/docs` serves generated `target/reports/apidocs/index.html`
+  - `GET /api/javadoc/docs/{relativePath}` serves generated documentation assets and pages
+- K6 routes (headers or query params supported):
+  - `GET /api/k6/version` (alias: `/api/k6/info/version`)
+  - `GET|POST /api/k6` (alias: `/api/k6/run`)
+  - Script execution accepts aliases for script and output settings (`scriptName`, `resultFile`)
 - LogAnalytics routes (headers or query params supported):
   - `GET /api/loganalytics/message`
   - `GET /api/loganalytics/message/startswith` (alias: `/api/loganalytics/message/starts-with`)
@@ -110,6 +118,9 @@ Java implementation of RestProvider controllers using Apache HttpComponents (Htt
 - PowerBI routes (headers or query params supported):
   - `GET|POST|PUT|DELETE /api/powerbi` (alias: `/api/powerbi/request`)
   - Supports aliases for request path, organization, API version, base URL, and access token override
+- Grafana routes (headers or query params supported):
+  - `GET|POST|PUT|DELETE /api/grafana` (alias: `/api/grafana/request`)
+  - Supports aliases for request path, API version, base URL, and API token override
 - Snowflake routes (headers or query params supported):
   - `GET|POST /api/snowflake/token` (alias: `/api/snowflake/oauth/token`)
   - Supports aliases for token endpoint, scope, client credentials, and runtime user/password overrides

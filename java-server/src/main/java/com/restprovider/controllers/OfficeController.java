@@ -24,18 +24,39 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+/**
+ * Controller for the Office integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class OfficeController extends BaseController {
     private final PasscodeValidator passcodeValidator;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public OfficeController() {
         this(new EnvPasscodeValidator());
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public OfficeController(PasscodeValidator passcodeValidator) {
         super("Office");
         this.passcodeValidator = passcodeValidator;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -219,4 +240,6 @@ public class OfficeController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
     }
 }
+
+
 

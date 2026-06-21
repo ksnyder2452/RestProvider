@@ -21,20 +21,41 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the BrowserStack integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class BrowserStackController extends BaseController {
     private final PasscodeValidator passcodeValidator;
     private final HttpInvoker httpInvoker;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public BrowserStackController() {
         this(new EnvPasscodeValidator(), BrowserStackController::invoke);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public BrowserStackController(PasscodeValidator passcodeValidator, HttpInvoker httpInvoker) {
         super("BrowserStack");
         this.passcodeValidator = passcodeValidator;
         this.httpInvoker = httpInvoker;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -154,6 +175,7 @@ public class BrowserStackController extends BaseController {
     private String call(ClassicHttpRequest request, Map<String, String> query, String endpoint) {
         String user = defaultValue(readValue(request, query, "browserstackUser", "username", "user"), env("browserstack_user"));
         String key = defaultValue(readValue(request, query, "browserstackAccessKey", "accessKey", "key"), env("browserstack_accesskey"));
+        // Outbound REST call to the target service endpoint.
         return httpInvoker.call("GET", endpoint, user, key);
     }
 
@@ -252,6 +274,7 @@ public class BrowserStackController extends BaseController {
                     .header("Authorization", "Basic " + auth)
                     .method(method, HttpRequest.BodyPublishers.noBody())
                     .build();
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = HttpClient.newHttpClient().send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -264,9 +287,14 @@ public class BrowserStackController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface HttpInvoker {
         String call(String method, String endpoint, String user, String accessKey);
     }
 }
+
+
 

@@ -1,18 +1,18 @@
 package com.restprovider.controllers;
 
+import com.restprovider.core.BaseController;
 import com.restprovider.core.HttpRequestUtil;
 import com.restprovider.domain.security.EnvPasscodeValidator;
 import com.restprovider.domain.security.PasscodeValidator;
-import com.restprovider.util.JsonUtil;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
-import com.restprovider.core.BaseController;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -21,28 +21,34 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 /**
- * Controller for the Jenkins integration endpoints.
+ * Controller for the Grafana integration endpoints.
  *
  * <p>This class maps controller routes, validates request input aliases, and
  * returns API responses aligned with RestProvider automation behavior.</p>
  */
-public class JenkinsController extends BaseController {
+public class GrafanaController extends BaseController {
+    private static final String GRAFANA_ROOT = "https://grafana.com";
+
     private final PasscodeValidator passcodeValidator;
+    private final TokenProvider tokenProvider;
     private final HttpInvoker httpInvoker;
 
     /**
      * Creates a controller with default runtime dependencies.
      */
-    public JenkinsController() {
-        this(new EnvPasscodeValidator(), JenkinsController::invoke);
+    public GrafanaController() {
+        this(new EnvPasscodeValidator(), GrafanaController::resolveApiToken, GrafanaController::invokeGrafana);
     }
 
     /**
      * Creates a controller with injected dependencies for testability and customization.
      */
-    public JenkinsController(PasscodeValidator passcodeValidator, HttpInvoker httpInvoker) {
-        super("Jenkins");
+    public GrafanaController(PasscodeValidator passcodeValidator,
+                             TokenProvider tokenProvider,
+                             HttpInvoker httpInvoker) {
+        super("Grafana");
         this.passcodeValidator = passcodeValidator;
+        this.tokenProvider = tokenProvider;
         this.httpInvoker = httpInvoker;
     }
 
@@ -62,70 +68,63 @@ public class JenkinsController extends BaseController {
         String route = normalizeRoute(subPath);
         String method = request.getMethod().toUpperCase();
         Map<String, String> query = HttpRequestUtil.queryParams(HttpRequestUtil.requestUri(request));
-        if (!"".equals(route)
-                || !("GET".equals(method) || "POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method))) {
+
+        if (!("".equals(route) || "request".equalsIgnoreCase(route))) {
             super.handle(request, response, subPath);
             return;
         }
 
-        if (!validatePassCode(request, response, query)) {
+        if (!("GET".equals(method) || "POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method))) {
+            super.handle(request, response, subPath);
             return;
         }
 
-        String subUri = readValue(request, query, "subURI", "subUri", "path", "jobPath");
-        if (!require(response, "subURI", subUri)) {
-            return;
-        }
-
-        String baseUrl = readValue(request, query, "jenkinsBaseUrl", "baseUrl", "serverUrl");
-        String serverName = readValue(request, query, "serverName", "host");
-        String serverPort = defaultValue(readValue(request, query, "serverPort", "port"), "8080");
-        if (baseUrl.isBlank() && serverName.isBlank()) {
-            respondJson(response, HttpStatus.SC_BAD_REQUEST,
-                    "{\"error\":\"Missing required parameter: serverName or jenkinsBaseUrl\"}");
-            return;
-        }
-
-        String user = defaultValue(readValue(request, query, "jenkinsUser", "username", "user"), env("jenkins_user"));
-        String token = defaultValue(readValue(request, query, "jenkinsApiToken", "apiToken", "token"), env("jenkins_apitoken"));
-        if (user.isBlank() || token.isBlank()) {
-            respondJson(response, HttpStatus.SC_BAD_REQUEST,
-                    "{\"error\":\"Missing Jenkins credentials (jenkinsUser/jenkinsApiToken or env vars)\"}");
-            return;
-        }
-
-        String endpointBase = baseUrl.isBlank() ? "http://" + serverName + ":" + serverPort : stripTrailingSlash(baseUrl);
-        String endpoint = endpointBase + "/" + stripLeadingSlash(subUri);
-
-        // Outbound REST call to the target service endpoint.
-        String result = httpInvoker.call(method, endpoint, user, token);
-        respondJson(response, HttpStatus.SC_OK, "{\"result\":\"" + JsonUtil.escape(result) + "\"}");
-    }
-
-    private boolean validatePassCode(ClassicHttpRequest request, ClassicHttpResponse response, Map<String, String> query) {
         String passCode = readValue(request, query, "passCode", "passcode");
         if (!passcodeValidator.isValid(passCode)) {
             logger.warn("Passcode validation failed for controller={} method={}", getName(), request.getMethod());
-            respondJson(response, HttpStatus.SC_UNAUTHORIZED, "{\"passCodeResult\":\"Passcode failure\"}");
-            return false;
+            respondText(response, HttpStatus.SC_OK, "Passcode failure");
+            return;
         }
-        return true;
+
+        String projectName = defaultValue(readValue(request, query, "projectName", "project"), "grafana");
+        String grafanaRequest = readValue(request, query, "grafanaRequest", "request", "path");
+        String apiVersion = defaultValue(readValue(request, query, "apiVersion", "version"), "1");
+        String baseUrl = defaultValue(readValue(request, query, "grafanaBaseUrl", "baseUrl"), GRAFANA_ROOT);
+
+        if (!require(response, "grafanaRequest", grafanaRequest)) {
+            return;
+        }
+
+        String token = defaultValue(readValue(request, query, "grafanaApiToken", "token", "bearerToken"), tokenProvider.getToken());
+        if (!require(response, "grafanaApiToken", token)) {
+            return;
+        }
+
+        String endpoint = stripTrailingSlash(baseUrl) + "/api/v" + apiVersion + "/" + stripSlashes(grafanaRequest);
+
+        Path tempFolder = Path.of(System.getProperty("user.dir"), "data_files", "temp", projectName);
+        Files.createDirectories(tempFolder);
+        String outputFile = defaultValue(readValue(request, query, "outputFile"), "grafana_get_response.txt");
+        Path outputPath = tempFolder.resolve(outputFile);
+        if (Files.exists(outputPath)) {
+            Files.delete(outputPath);
+        }
+
+        // Outbound REST call to the target service endpoint.
+        String responseBody = httpInvoker.call(method, endpoint, token);
+        Files.writeString(outputPath, responseBody, StandardCharsets.UTF_8);
+        respondText(response, HttpStatus.SC_OK, "Grafana Response written to " + outputPath);
     }
 
     private static String normalizeRoute(String subPath) {
         String route = subPath == null ? "" : subPath;
-        if (route.startsWith("jenkins/")) {
-            route = route.substring("jenkins/".length());
+        if (route.startsWith("grafana/")) {
+            route = route.substring("grafana/".length());
         }
-        if ("jenkins".equalsIgnoreCase(route)) {
+        if ("grafana".equalsIgnoreCase(route)) {
             return "";
         }
         return route;
-    }
-
-    private static String env(String name) {
-        String value = System.getenv(name);
-        return value == null ? "" : value;
     }
 
     private static String readValue(ClassicHttpRequest request, Map<String, String> query, String... keys) {
@@ -152,8 +151,7 @@ public class JenkinsController extends BaseController {
         if (value != null && !value.isBlank()) {
             return true;
         }
-        respondJson(response, HttpStatus.SC_BAD_REQUEST,
-                "{\"error\":\"" + JsonUtil.escape("Missing required parameter: " + field) + "\"}");
+        respondText(response, HttpStatus.SC_BAD_REQUEST, "Missing required parameter: " + field);
         return false;
     }
 
@@ -169,33 +167,52 @@ public class JenkinsController extends BaseController {
         return v;
     }
 
-    private static String stripLeadingSlash(String value) {
+    private static String stripSlashes(String value) {
         String v = value == null ? "" : value.trim();
         while (v.startsWith("/")) {
             v = v.substring(1);
         }
+        while (v.endsWith("/")) {
+            v = v.substring(0, v.length() - 1);
+        }
         return v;
     }
 
-    private static String invoke(String method, String endpoint, String user, String token) {
+    private static String resolveApiToken() {
+        return env("grafanaApiToken");
+    }
+
+    private static String invokeGrafana(String method, String endpoint, String token) {
         try {
-            String creds = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder(URI.create(endpoint))
-                    .header("Authorization", "Basic " + creds)
+            HttpRequest req = HttpRequest.newBuilder(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + token)
                     .method(method, HttpRequest.BodyPublishers.noBody())
                     .build();
             // Outbound REST call to the target service endpoint.
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.body();
+            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            return res.body();
         } catch (Exception ex) {
-            return "Jenkins request failed: " + ex.getMessage();
+            return "Grafana request failed: " + ex.getMessage();
         }
     }
 
-    private static void respondJson(ClassicHttpResponse response, int code, String body) {
+    private static String env(String name) {
+        String value = System.getenv(name);
+        return value == null ? "" : value;
+    }
+
+    private static void respondText(ClassicHttpResponse response, int code, String body) {
         response.setCode(code);
-        response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
+        response.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
+    }
+
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
+    @FunctionalInterface
+    public interface TokenProvider {
+        String getToken();
     }
 
     /**
@@ -203,10 +220,9 @@ public class JenkinsController extends BaseController {
      */
     @FunctionalInterface
     public interface HttpInvoker {
-        String call(String method, String endpoint, String user, String token);
+        String call(String method, String endpoint, String bearerToken);
     }
 }
-
 
 
 

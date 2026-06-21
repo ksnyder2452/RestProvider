@@ -22,15 +22,27 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the Azure integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class AzureController implements BridgeController {
     private static final Logger logger = LogManager.getLogger(AzureController.class);
     private final AzureService azureService;
     private final PasscodeValidator passcodeValidator;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public AzureController() {
         this(new AzureCliService(new ShellProcessExecutionService()), new EnvPasscodeValidator());
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public AzureController(AzureService azureService, PasscodeValidator passcodeValidator) {
         this.azureService = azureService;
         this.passcodeValidator = passcodeValidator;
@@ -41,6 +53,15 @@ public class AzureController implements BridgeController {
         return "Azure";
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -121,3 +142,5 @@ public class AzureController implements BridgeController {
                 ContentType.APPLICATION_JSON));
     }
 }
+
+

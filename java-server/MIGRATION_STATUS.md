@@ -19,8 +19,11 @@ This file tracks the Java implementation status for each controller.
 | Dataverse | 4 | Native | Native Dataverse route set implemented via SQL CLI with GET and POST query support, route aliases, runtime credential overrides, and required-field validation |
 | FHIR | 4 | Native | Authenticated FHIR GET/POST/PUT/DELETE operations implemented via native HTTP with route-based resource paths, query aliases, token override support, and required-field validation |
 | File | 31 | Native | Full file route set implemented including sorting, archive, sftp, local transfer, diff, and template-copy flows, with common routes accepting query-param aliases and required-file validation |
+| Grafana | 4 | Native | Native authenticated Grafana GET, POST, PUT, and DELETE pass-through implemented with request alias routes, runtime token and base-URL overrides, and required-field validation |
 | Jenkins | 4 | Native | Native Jenkins GET/POST/PUT/DELETE pass-through with auth implemented |
+| Javadoc | 3 | Native | Native documentation generation and publish endpoints for building Javadocs and serving generated docs through HTTP |
 | JMeter | 3 | Native | Native process-based jmeter version/server/script-run endpoints |
+| K6 | 2 | Native | Native process-based k6 version and script-run endpoints |
 | LogAnalytics | 3 | Native | Native log analytics message matching routes implemented with route aliases plus query/header aliases for run, workspace, and expected-message inputs |
 | Misc | 15 | Native | Native misc route set implemented for VPN, heartbeat, time, process, variables, random, and credential flows, with tested routes accepting query/header aliases and required-field validation |
 | MSD | 1 | Native | Native sqlcmd-backed MSD query execution implemented |

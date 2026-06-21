@@ -21,6 +21,12 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the PowerBI integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class PowerBIController extends BaseController {
     private static final String POWER_BI_ROOT = "https://api.powerbi.com";
 
@@ -28,10 +34,16 @@ public class PowerBIController extends BaseController {
     private final TokenProvider tokenProvider;
     private final HttpInvoker httpInvoker;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public PowerBIController() {
         this(new EnvPasscodeValidator(), PowerBIController::resolveAccessToken, PowerBIController::invokePowerBi);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public PowerBIController(PasscodeValidator passcodeValidator,
                              TokenProvider tokenProvider,
                              HttpInvoker httpInvoker) {
@@ -41,6 +53,15 @@ public class PowerBIController extends BaseController {
         this.httpInvoker = httpInvoker;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -91,6 +112,7 @@ public class PowerBIController extends BaseController {
             Files.delete(outputPath);
         }
 
+        // Outbound REST call to the target service endpoint.
         String responseBody = httpInvoker.call(method, endpoint, token);
         Files.writeString(outputPath, responseBody, StandardCharsets.UTF_8);
         respondText(response, HttpStatus.SC_OK, "PowerBI Response written to " + outputPath);
@@ -183,6 +205,7 @@ public class PowerBIController extends BaseController {
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .POST(HttpRequest.BodyPublishers.ofString(form))
                     .build();
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return extractAccessToken(res.body());
         } catch (Exception ex) {
@@ -197,6 +220,7 @@ public class PowerBIController extends BaseController {
                     .header("Authorization", "Bearer " + token)
                     .method(method, HttpRequest.BodyPublishers.noBody())
                     .build();
+            // Outbound REST call to the target service endpoint.
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             return res.body();
         } catch (Exception ex) {
@@ -229,14 +253,23 @@ public class PowerBIController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface TokenProvider {
         String getToken();
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface HttpInvoker {
         String call(String method, String endpoint, String bearerToken);
     }
 }
+
+
+
 

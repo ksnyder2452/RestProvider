@@ -59,4 +59,15 @@ class AdminToggleIntegrationTest {
         dispatcher.handle(new BasicClassicHttpRequest("GET", "/api/string/echo"), afterEnable, TestHttpContexts.newContext());
         Assertions.assertEquals(200, afterEnable.getCode());
     }
+
+    @Test
+    void shouldListAllControllersDisabledByDefault() throws Exception {
+        BasicClassicHttpResponse response = new BasicClassicHttpResponse(200);
+        dispatcher.handle(new BasicClassicHttpRequest("GET", "/admin/controllers"), response, TestHttpContexts.newContext());
+
+        String body = TestResponseUtil.body(response);
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertTrue(body.contains("\"name\":\"k6\""));
+        Assertions.assertFalse(body.contains("\"enabled\":true"));
+    }
 }

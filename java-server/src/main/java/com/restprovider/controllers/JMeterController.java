@@ -14,18 +14,39 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+/**
+ * Controller for the JMeter integration endpoints.
+ *
+ * <p>This class maps controller routes, validates request input aliases, and
+ * returns API responses aligned with RestProvider automation behavior.</p>
+ */
 public class JMeterController extends BaseController {
     private final CommandRunner commandRunner;
 
+    /**
+     * Creates a controller with default runtime dependencies.
+     */
     public JMeterController() {
         this(ProcessUtil::run);
     }
 
+    /**
+     * Creates a controller with injected dependencies for testability and customization.
+     */
     public JMeterController(CommandRunner commandRunner) {
         super("JMeter");
         this.commandRunner = commandRunner;
     }
 
+    /**
+     * Handles incoming HTTP requests for this controller's route surface.
+     *
+     * @param request inbound HTTP request
+     * @param response outbound HTTP response
+     * @param subPath controller-specific route segment after /api/{controller}/
+     * @throws IOException when I/O work fails
+     * @throws HttpException when request handling fails at HTTP protocol level
+     */
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, String subPath)
             throws IOException, HttpException {
@@ -131,8 +152,13 @@ public class JMeterController extends BaseController {
         response.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     }
 
+    /**
+     * Functional contract used to abstract external operations for this controller.
+     */
     @FunctionalInterface
     public interface CommandRunner {
         String run(String command, String args);
     }
 }
+
+
