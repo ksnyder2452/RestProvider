@@ -24,3 +24,17 @@ jobs:
 
       - name: Run Maven tests
         run: mvn -B -ntp -f java-server/pom.xml test
+
+      - name: Generate Javadocs
+        run: mvn -B -ntp -f java-server/pom.xml -DskipTests javadoc:javadoc
+
+      - name: Verify JavadocController docs path
+        run: |
+          test -f java-server/target/reports/apidocs/index.html
+
+      - name: Upload Javadocs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-javadocs
+          path: java-server/target/reports/apidocs
+          if-no-files-found: error
