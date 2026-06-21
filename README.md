@@ -1,4 +1,4 @@
-# RestProvider
+# REST API Provider
 
 [![Java Tests (push)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml/badge.svg?event=push)](https://github.com/ksnyder2452/RestProvider/actions/workflows/java-tests.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
